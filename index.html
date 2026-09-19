@@ -660,7 +660,7 @@
             showModal('modal-provider');
         }
 
-        // --- SALVARE FIREBASE ---
+        // --- SALVARE FIREBASE SAU LOCAL ---
         window.saveBill = async (e) => {
             e.preventDefault();
             const id = document.getElementById('bill-id').value;
@@ -670,7 +670,7 @@
                 startDate: document.getElementById('bill-start').value,
                 endDate: document.getElementById('bill-end').value
             };
-            if(db && auth.currentUser) {
+            if(db && auth && auth.currentUser) {
                 try {
                     if(id) {
                         await updateDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'bills', id), data);
@@ -679,8 +679,19 @@
                         data.id = newId; data.payments = {};
                         await setDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'bills', newId), data);
                     }
-                    closeModal('modal-bill'); showToast('Factură salvată!');
+                    closeModal('modal-bill'); showToast('Factură salvată (Cloud)!');
                 } catch(err) { console.error(err); }
+            } else {
+                if(id) {
+                    const idx = state.bills.findIndex(b => b.id === id);
+                    if(idx !== -1) state.bills[idx] = { ...state.bills[idx], ...data };
+                } else {
+                    data.id = Date.now().toString();
+                    data.payments = {};
+                    state.bills.push(data);
+                }
+                closeModal('modal-bill'); showToast('Factură salvată (Local)!');
+                if(state.currentTab === 'facturi') renderCurrentView();
             }
         };
 
@@ -693,15 +704,25 @@
                 endDate: document.getElementById('res-end').value,
                 weight: parseInt(document.getElementById('res-weight').value)
             };
-            if(db && auth.currentUser) {
+            if(db && auth && auth.currentUser) {
                 try {
                     if(id) await updateDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'residents', id), data);
                     else {
                         const newId = Date.now().toString(); data.id = newId;
                         await setDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'residents', newId), data);
                     }
-                    closeModal('modal-resident'); showToast('Locatar salvat!');
+                    closeModal('modal-resident'); showToast('Locatar salvat (Cloud)!');
                 } catch(err) { console.error(err); }
+            } else {
+                if(id) {
+                    const idx = state.residents.findIndex(r => r.id === id);
+                    if(idx !== -1) state.residents[idx] = { ...state.residents[idx], ...data };
+                } else {
+                    data.id = Date.now().toString();
+                    state.residents.push(data);
+                }
+                closeModal('modal-resident'); showToast('Locatar salvat (Local)!');
+                if(state.currentTab === 'locatari') renderCurrentView();
             }
         };
 
@@ -712,31 +733,43 @@
                 name: document.getElementById('prov-name').value,
                 type: document.getElementById('prov-type').value
             };
-            if(db && auth.currentUser) {
+            if(db && auth && auth.currentUser) {
                 try {
                     if(id) await updateDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'providers', id), data);
                     else {
                         const newId = Date.now().toString(); data.id = newId;
                         await setDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'providers', newId), data);
                     }
-                    closeModal('modal-provider'); showToast('Furnizor salvat!');
+                    closeModal('modal-provider'); showToast('Furnizor salvat (Cloud)!');
                 } catch(err) { console.error(err); }
+            } else {
+                if(id) {
+                    const idx = state.providers.findIndex(p => p.id === id);
+                    if(idx !== -1) state.providers[idx] = {id, ...data};
+                } else {
+                    data.id = Date.now().toString();
+                    state.providers.push(data);
+                }
+                closeModal('modal-provider'); showToast('Furnizor salvat (Local)!');
+                if(state.currentTab === 'setari') renderCurrentView();
             }
         }
 
         window.togglePayment = async (billId, resId) => {
             const bill = state.bills.find(b => b.id === billId);
-            if(bill && db && auth.currentUser) {
+            if(bill) {
                 const isPaid = bill.payments[resId] || false;
                 const newPayments = { ...bill.payments };
                 newPayments[resId] = !isPaid;
                 
-                // Optimistic UI Update (Se simte rapid la deget)
-                bill.payments = newPayments; renderBillsList();
+                bill.payments = newPayments; 
+                renderBillsList();
                 
-                try {
-                    await updateDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'bills', billId), { payments: newPayments });
-                } catch(err) { console.error(err); }
+                if (db && auth && auth.currentUser) {
+                    try {
+                        await updateDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'bills', billId), { payments: newPayments });
+                    } catch(err) { console.error(err); }
+                }
             }
         };
 
@@ -746,14 +779,24 @@
         };
 
         window.executeDelete = async () => {
-            if(!db || !auth.currentUser || !state.deleteTarget) return;
+            if(!state.deleteTarget) return;
             const { type, id } = state.deleteTarget;
             const col = type === 'bill' ? 'bills' : type === 'resident' ? 'residents' : 'providers';
-            try {
-                await deleteDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', col, id));
-                showToast('Ștergere reușită.');
+            
+            if(db && auth && auth.currentUser) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', col, id));
+                    showToast('Ștergere reușită (Cloud).');
+                    closeConfirmModal();
+                } catch(err) { console.error(err); }
+            } else {
+                if(type === 'bill') state.bills = state.bills.filter(b => b.id !== id);
+                if(type === 'resident') state.residents = state.residents.filter(r => r.id !== id);
+                if(type === 'provider') state.providers = state.providers.filter(p => p.id !== id);
+                showToast('Ștergere reușită (Local).');
                 closeConfirmModal();
-            } catch(err) { console.error(err); }
+                renderCurrentView();
+            }
         };
 
         // Utilities Modale
@@ -800,7 +843,13 @@
 
         // --- FIREBASE INIT ---
         async function initApp() {
-            if (!app) { console.warn("Fără Firebase config."); return; }
+            if (!app) { 
+                console.warn("Fără Firebase config. Rulăm în mod Offline (Local)."); 
+                state.providers = [...defaultProviders];
+                updateConnectionStatus(false);
+                renderCurrentView();
+                return; 
+            }
             try {
                 const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
                 if (token) await signInWithCustomToken(auth, token);
