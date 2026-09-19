@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="HomeShare">
     
-    <!-- Custom SVG Favicon -->
+    <!-- Custom SVG Favicon (House Logo) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23c8d3de' d='M42,39H6v2c0,1.105,0.895,2,2,2h32c1.105,0,2-0.895,2-2V39z'/%3E%3Cpath fill='%23f4f4f4' d='M42,39H6V20L24,3l18,17V39z'/%3E%3Cpath fill='%23de490d' d='M13,25h10c0.552,0,1,0.448,1,1v17H12V26C12,25.448,12.448,25,13,25z'/%3E%3Cpath fill='%23b9360c' d='M44.495,19.507L25.326,2.503C24.948,2.168,24.474,2,24,2s-0.948,0.168-1.326,0.503L3.505,19.507c-0.42,0.374-0.449,1.02-0.064,1.43l1.636,1.745c0.369,0.394,0.984,0.424,1.39,0.067L24,7.428L41.533,22.75c0.405,0.356,1.021,0.327,1.39-0.067l1.636-1.745C44.944,20.527,44.915,19.881,44.495,19.507z'/%3E%3Cpath fill='%230a85d9' d='M29,25h6c0.552,0,1,0.448,1,1v6c0,0.552-0.448,1-1,1h-6c-0.552,0-1-0.448-1-1v-6C28,25.448,28.448,25,29,25z'/%3E%3C/svg%3E">
 
     <!-- PWA Manifest & Service Worker Setup -->
@@ -547,7 +547,7 @@
                         iconBadge = 'fa-triangle-exclamation';
                         labelStatus = `Depășit (${Math.abs(diffDays)} zile)`;
                     } else if(diffDays <= 3) {
-                        badgeClass = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+                        badgeClass = 'bg-amber-500/20 text-amber-400 border-amber-500/40';
                         iconBadge = 'fa-clock';
                         labelStatus = `Expiră în ${diffDays} zile`;
                     }
@@ -600,34 +600,83 @@
         };
 
         window.shareCard = async function(billId) {
-            const originalCard = document.getElementById(`bill-card-${billId}`);
-            if(!originalCard) return;
+            const bill = state.bills.find(b => b.id === billId);
+            if(!bill) return;
 
             showToast('Se generează imaginea pentru WhatsApp...', 'success');
 
-            const wrapper = document.createElement('div');
-            wrapper.style.position = 'fixed';
-            wrapper.style.top = '-9999px';
-            wrapper.style.left = '0';
-            wrapper.style.width = '360px';
-            wrapper.style.zIndex = '99999';
+            // Construim un element container dedicat randării curate pentru WhatsApp, fără butoane sau imperfecțiuni
+            const exportContainer = document.createElement('div');
+            exportContainer.style.position = 'fixed';
+            exportContainer.style.top = '-9999px';
+            exportContainer.style.left = '0';
+            exportContainer.style.width = '380px';
+            exportContainer.style.padding = '16px';
+            exportContainer.style.backgroundColor = '#090d16';
+            exportContainer.style.fontFamily = "'Inter', sans-serif";
+            exportContainer.style.borderRadius = '24px';
+            exportContainer.style.border = '1px solid #1e293b';
 
-            const clone = originalCard.cloneNode(true);
-            const actionRow = clone.querySelector('.flex.items-center.justify-end');
-            if(actionRow) actionRow.remove();
+            const style = getProviderStyle(bill.type);
+            const shares = calculateShares(bill);
+            const dStart = new Date(bill.startDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
+            const dEnd = new Date(bill.endDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
 
-            wrapper.appendChild(clone);
-            document.body.appendChild(wrapper);
+            let paymentsExportHTML = '';
+            state.residents.forEach(res => {
+                const amount = shares[res.id];
+                if (amount > 0.01) {
+                    const isPaid = bill.payments[res.id] || false;
+                    const badgeBg = isPaid ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+                    const badgeBorder = isPaid ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)';
+                    const badgeColor = isPaid ? '#34d399' : '#f87171';
+                    const symbol = isPaid ? '✓' : '✕';
+
+                    paymentsExportHTML += `
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background-color: #0d121c; border: 1px solid rgba(30, 41, 59, 0.6); border-radius: 12px; margin-bottom: 6px;">
+                            <span style="font-size: 13px; color: #f3f4f6; font-weight: 500;">${res.name}</span>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 13px; color: #ffffff; font-weight: 700;">${amount.toFixed(2)} €</span>
+                                <div style="width: 24px; height: 24px; border-radius: 8px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                    ${symbol}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            exportContainer.innerHTML = `
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 1px solid rgba(30, 41, 59, 0.6); padding-bottom: 12px; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.25);">
+                            <i class="fa-solid ${style.icon}" style="font-size: 16px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 700; color: #ffffff; font-size: 14px;">${bill.type}</div>
+                            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">${dStart} — ${dEnd}</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 18px; font-weight: 900; color: #ffffff;">${bill.amount.toFixed(2)} €</span>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                    ${paymentsExportHTML}
+                </div>
+            `;
+
+            document.body.appendChild(exportContainer);
 
             try {
-                const canvas = await html2canvas(clone, {
+                const canvas = await html2canvas(exportContainer, {
                     backgroundColor: '#090d16',
                     scale: 3,
                     logging: false,
                     useCORS: true
                 });
                 
-                document.body.removeChild(wrapper);
+                document.body.removeChild(exportContainer);
 
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], `factura_${billId}.png`, { type: 'image/png' });
@@ -651,7 +700,7 @@
                     showToast('Imaginea a fost descărcată cu succes!');
                 });
             } catch (err) {
-                if(document.body.contains(wrapper)) document.body.removeChild(wrapper);
+                if(document.body.contains(exportContainer)) document.body.removeChild(exportContainer);
                 console.error(err);
                 showToast('Nu s-a putut genera imaginea.', 'error');
             }
@@ -959,11 +1008,10 @@
                     }
                 );
 
-                onSnapshot(collection(db, 'facturi', platformAppId, 'public', 'data', 'bills'), () => {}); // placeholder
-
                 onSnapshot(collection(db, 'artifacts', platformAppId, 'public', 'data', 'bills'), 
                     (snap) => {
                         state.bills = [];
+                        snap.gap = [];
                         snap.forEach(d => state.bills.push({id: d.id, ...d.data()}));
                         if(state.currentTab === 'facturi') renderCurrentView();
                     }
