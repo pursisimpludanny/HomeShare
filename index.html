@@ -149,7 +149,7 @@
         <div class="bg-[#111827] rounded-3xl border border-slate-800 w-full max-w-sm overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-bill-content">
             <div class="px-5 py-4 border-b border-slate-800/60 flex items-center justify-between">
                 <h3 class="text-base font-bold text-white flex items-center gap-2" id="bill-modal-title">Factură Nouă</h3>
-                <button onclick="closeModal('modal-bill')" class="text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="closeModal('modal-bill')" class="text-slate-400 hover:text-white transition-colors p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <form id="form-bill" class="p-5 grid gap-4" onsubmit="saveBill(event)">
                 <input type="hidden" id="bill-id">
@@ -187,7 +187,7 @@
         <div class="bg-[#111827] rounded-3xl border border-slate-800 w-full max-w-sm overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-resident-content">
             <div class="px-5 py-4 border-b border-slate-800/60 flex items-center justify-between">
                 <h3 class="text-base font-bold text-white flex items-center gap-2" id="resident-modal-title">Adaugă Locatar</h3>
-                <button onclick="closeModal('modal-resident')" class="text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="closeModal('modal-resident')" class="text-slate-400 hover:text-white transition-colors p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <form id="form-resident" class="p-5 grid gap-4" onsubmit="saveResident(event)">
                 <input type="hidden" id="res-id">
@@ -223,7 +223,7 @@
         <div class="bg-[#111827] rounded-3xl border border-slate-800 w-full max-w-sm overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-provider-content">
             <div class="px-5 py-4 border-b border-slate-800/60 flex items-center justify-between">
                 <h3 class="text-base font-bold text-white flex items-center gap-2" id="provider-modal-title">Adaugă Furnizor</h3>
-                <button onclick="closeModal('modal-provider')" class="text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="closeModal('modal-provider')" class="text-slate-400 hover:text-white transition-colors p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <form id="form-provider" class="p-5 grid gap-4" onsubmit="saveProvider(event)">
                 <input type="hidden" id="prov-id">
@@ -510,7 +510,7 @@
                                 <span class="text-sm text-slate-300 font-medium">${res.name}</span>
                                 <div class="flex items-center gap-3">
                                     <span class="font-bold text-white">${amount.toFixed(2)} €</span>
-                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="w-8 h-8 rounded-lg border flex items-center justify-center transition-all ${btnClass} active:scale-95 shadow-sm" title="${isPaid ? 'Plătit' : 'Neplătit'}">
+                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="w-9 h-9 rounded-xl border flex items-center justify-center transition-all ${btnClass} active:scale-95 shadow-sm" title="${isPaid ? 'Plătit' : 'Neplătit'}">
                                         ${icon}
                                     </button>
                                 </div>
@@ -521,39 +521,75 @@
 
                 const dStart = new Date(bill.startDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
                 const dEnd = new Date(bill.endDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
-                const dDue = bill.dueDate ? new Date(bill.dueDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short', year:'numeric'}) : '-';
+                
+                // Calcul stitizare Data Scadentă (Verde / Portocaliu / Roșu)
+                let dueDateHTML = '';
+                if(bill.dueDate) {
+                    const today = new Date();
+                    today.setHours(0,0,0,0);
+                    const due = new Date(bill.dueDate + 'T00:00:00');
+                    const diffTime = due - today;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    let badgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                    let iconBadge = 'fa-circle-check';
+                    let labelStatus = `Scadent: ${new Date(bill.dueDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short', year:'numeric'})}`;
+
+                    if(diffDays < 0) {
+                        badgeClass = 'bg-red-500/15 text-red-400 border-red-500/30 animate-pulse';
+                        iconBadge = 'fa-triangle-exclamation';
+                        labelStatus = `Depășit de ${Math.abs(diffDays)} zile!`;
+                    } else if(diffDays <= 3) {
+                        badgeClass = 'bg-amber-500/15 text-amber-400 border-amber-500/30';
+                        iconBadge = 'fa-clock';
+                        labelStatus = `Expiră în ${diffDays} zile`;
+                    }
+
+                    dueDateHTML = `
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-semibold mt-1.5 ${badgeClass}">
+                            <i class="fa-solid ${iconBadge}"></i> ${labelStatus}
+                        </div>
+                    `;
+                }
 
                 const card = document.createElement('div');
                 card.id = `bill-card-${bill.id}`;
                 card.className = "bg-[#111827] border border-slate-800 rounded-3xl overflow-hidden shadow-2xl transition-all relative";
                 card.innerHTML = `
-                    <div class="p-4 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/60">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl ${style.theme} border flex items-center justify-center shrink-0">
-                                <i class="fa-solid ${style.icon} text-lg"></i>
-                            </div>
-                            <div class="overflow-hidden">
-                                <h3 class="font-bold text-white text-sm truncate max-w-[140px]">${bill.type}</h3>
-                                <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5">${dStart} — ${dEnd}</p>
-                                <p class="text-[10px] text-amber-400 font-medium mt-0.5"><i class="fa-solid fa-clock"></i> Scadentă: ${dDue}</p>
-                            </div>
-                        </div>
-                        <div class="text-right shrink-0 flex items-center gap-2">
-                            <div>
-                                <span class="block text-xl font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
-                                <div class="flex gap-2 justify-end mt-1">
-                                    <button onclick="window.shareCard('${bill.id}')" class="text-amber-400 hover:text-amber-300 transition-colors px-1.5 py-0.5 bg-amber-500/10 rounded border border-amber-500/20 text-xs" title="Distribuie pe WhatsApp"><i class="fa-brands fa-whatsapp"></i></button>
-                                    <button onclick="window.editBill('${bill.id}')" class="text-slate-500 hover:text-white transition-colors"><i class="fa-solid fa-pen-to-square text-xs"></i></button>
-                                    <button onclick="window.confirmDeleteAction('bill', '${bill.id}')" class="text-slate-500 hover:text-red-400 transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
+                    <div class="p-4 border-b border-slate-800/80 bg-slate-900/60">
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="flex items-center gap-3 overflow-hidden">
+                                <div class="w-10 h-10 rounded-xl ${style.theme} border flex items-center justify-center shrink-0">
+                                    <i class="fa-solid ${style.icon} text-lg"></i>
+                                </div>
+                                <div class="overflow-hidden">
+                                    <h3 class="font-bold text-white text-sm truncate">${bill.type}</h3>
+                                    <p class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5">${dStart} — ${dEnd}</p>
                                 </div>
                             </div>
+                            <div class="text-right shrink-0">
+                                <span class="block text-xl font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
+                            </div>
+                        </div>
+                        ${dueDateHTML}
+                        <!-- Butoane mari optimizate pentru telefon -->
+                        <div class="flex items-center justify-end gap-2 mt-3 pt-2.5 border-t border-slate-800/60">
+                            <button onclick="window.shareCard('${bill.id}')" class="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all">
+                                <i class="fa-brands fa-whatsapp text-sm"></i> Distribuie
+                            </button>
+                            <button onclick="window.editBill('${bill.id}')" class="p-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-xl text-xs flex items-center justify-center transition-all" title="Editează">
+                                <i class="fa-solid fa-pen text-xs"></i>
+                            </button>
+                            <button onclick="window.confirmDeleteAction('bill', '${bill.id}')" class="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs flex items-center justify-center transition-all" title="Șterge">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
                         </div>
                     </div>
                     <div class="p-4">${paymentsHTML || '<p class="text-xs text-slate-500 text-center">Fără locatari activi.</p>'}</div>
                 `;
                 container.appendChild(card);
             });
-        }
+        };
 
         window.shareCard = async function(billId) {
             const originalCard = document.getElementById(`bill-card-${billId}`);
@@ -561,20 +597,74 @@
 
             showToast('Se generează imaginea curată pentru WhatsApp...', 'success');
 
-            // Cream un element curat în afara ecranului pentru randare impecabilă (fără butoane de ștergere/editare)
+            // Cream un container dedicat, optimizat ca imaginea să nu iasă niciodată distorsionată
             const exportContainer = document.createElement('div');
             exportContainer.style.position = 'fixed';
             exportContainer.style.top = '-9999px';
-            exportContainer.style.width = '400px';
+            exportContainer.style.left = '0';
+            exportContainer.style.width = '420px';
             exportContainer.style.backgroundColor = '#090d16';
-            exportContainer.style.padding = '20px';
+            exportContainer.style.color = '#f3f4f6';
+            exportContainer.style.padding = '24px';
             exportContainer.style.borderRadius = '24px';
             exportContainer.style.border = '1px solid #1f2937';
-            exportContainer.innerHTML = originalCard.innerHTML;
+            exportContainer.style.fontFamily = 'Inter, sans-serif';
 
-            // Eliminam butoanele de actiune din imaginea generata
-            const actionButtons = exportContainer.querySelectorAll('button');
-            actionButtons.forEach(b => b.remove());
+            // Copiem doar conținutul util (fără butoanele de acțiune)
+            const bill = state.bills.find(b => b.id === billId);
+            const style = getProviderStyle(bill.type);
+            const shares = window.calculateShares(bill);
+            
+            let paymentsListHTML = '';
+            window.state.residents.forEach(res => {
+                const amount = shares[res.id];
+                if (amount > 0.01) {
+                    const isPaid = bill.payments[res.id] || false;
+                    const badgeText = isPaid ? 'Plătit ✓' : 'Neplătit ✕';
+                    const badgeColor = isPaid ? '#10b981' : '#ef4444';
+                    const badgeBg = isPaid ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+
+                    paymentsListHTML += `
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #1f2937;">
+                            <span style="font-size: 14px; font-weight: 500; color: #cbd5e1;">${res.name}</span>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 15px; font-weight: 700; color: #ffffff;">${amount.toFixed(2)} €</span>
+                                <span style="font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 8px; background-color: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeColor};">
+                                    ${badgeText}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            const dStart = new Date(bill.startDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
+            const dEnd = new Date(bill.endDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
+            const dDue = bill.dueDate ? new Date(bill.dueDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short', year:'numeric'}) : '-';
+
+            exportContainer.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #1f2937;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); display: flex; align-items: center; justify-content: center; color: #f59e0b; font-size: 18px;">
+                            🏠
+                        </div>
+                        <div>
+                            <h3 style="font-size: 16px; font-weight: 800; color: #ffffff; margin: 0;">${bill.type}</h3>
+                            <p style="font-size: 11px; color: #94a3b8; text-transform: uppercase; margin: 2px 0 0 0;">${dStart} — ${dEnd}</p>
+                            <p style="font-size: 11px; color: #fbbf24; margin: 2px 0 0 0;">Scadentă: ${dDue}</p>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 22px; font-weight: 900; color: #ffffff;">${bill.amount.toFixed(2)} €</span>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    ${paymentsListHTML}
+                </div>
+                <div style="text-align: center; margin-top: 16px; font-size: 10px; color: #64748b; font-weight: 500;">
+                    Generat din HomeShare App
+                </div>
+            `;
 
             document.body.appendChild(exportContainer);
 
@@ -588,13 +678,13 @@
                 document.body.removeChild(exportContainer);
 
                 canvas.toBlob(async (blob) => {
-                    const file = new File([blob], `factura_${billId}.png`, { type: 'image/png' });
+                    const file = new File([blob], `factura_${bill.type}.png`, { type: 'image/png' });
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
                             await navigator.share({
                                 files: [file],
                                 title: 'Factură HomeShare',
-                                text: 'Salut! Iată detaliile și repartizarea facturii.'
+                                text: `Salut! Iată repartizarea pentru factura de ${bill.type} (${bill.amount.toFixed(2)} €).`
                             });
                             return;
                         } catch (err) {
@@ -603,10 +693,10 @@
                     }
                     
                     const link = document.createElement('a');
-                    link.download = `factura_${billId}.png`;
+                    link.download = `factura_${bill.type}.png`;
                     link.href = canvas.toDataURL();
                     link.click();
-                    showToast('Imaginea a fost salvată! O poți trimite pe WhatsApp.');
+                    showToast('Imaginea a fost salvată în galerie!');
                 });
             } catch (err) {
                 if(document.body.contains(exportContainer)) document.body.removeChild(exportContainer);
@@ -637,9 +727,9 @@
                             <p class="text-[10px] text-slate-400 uppercase font-semibold mt-0.5">Pondere: ${res.weight}</p>
                         </div>
                     </div>
-                    <div class="flex gap-3">
-                        <button onclick="window.editResident('${res.id}')" class="text-slate-500 hover:text-white"><i class="fa-solid fa-pen text-sm"></i></button>
-                        <button onclick="window.confirmDeleteAction('resident', '${res.id}')" class="text-slate-500 hover:text-red-400"><i class="fa-solid fa-trash text-sm"></i></button>
+                    <div class="flex gap-2">
+                        <button onclick="window.editResident('${res.id}')" class="p-2.5 text-slate-400 hover:text-white bg-slate-800/60 rounded-xl"><i class="fa-solid fa-pen text-sm"></i></button>
+                        <button onclick="window.confirmDeleteAction('resident', '${res.id}')" class="p-2.5 text-slate-400 hover:text-red-400 bg-red-500/10 rounded-xl"><i class="fa-solid fa-trash text-sm"></i></button>
                     </div>
                 `;
                 container.appendChild(card);
@@ -665,9 +755,9 @@
                             <p class="text-[10px] text-slate-400 uppercase font-semibold mt-0.5">${prov.type}</p>
                         </div>
                     </div>
-                    <div class="flex gap-3">
-                        <button onclick="window.editProvider('${prov.id}')" class="text-slate-500 hover:text-white"><i class="fa-solid fa-pen text-sm"></i></button>
-                        <button onclick="window.confirmDeleteAction('provider', '${prov.id}')" class="text-slate-500 hover:text-red-400"><i class="fa-solid fa-trash text-sm"></i></button>
+                    <div class="flex gap-2">
+                        <button onclick="window.editProvider('${prov.id}')" class="p-2.5 text-slate-400 hover:text-white bg-slate-800/60 rounded-xl"><i class="fa-solid fa-pen text-sm"></i></button>
+                        <button onclick="window.confirmDeleteAction('provider', '${prov.id}')" class="p-2.5 text-slate-400 hover:text-red-400 bg-red-500/10 rounded-xl"><i class="fa-solid fa-trash text-sm"></i></button>
                     </div>
                 `;
                 container.appendChild(card);
