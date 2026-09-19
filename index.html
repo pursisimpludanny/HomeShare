@@ -521,16 +521,16 @@
                     if (amount > 0.01) {
                         const isPaid = bill.payments[res.id] || false;
                         const btnClass = isPaid 
-                            ? 'bg-emerald-950/70 text-emerald-400 border-emerald-500/50' 
-                            : 'bg-rose-950/70 text-rose-400 border-rose-500/50';
-                        const icon = isPaid ? '<i class="fa-solid fa-check text-sm font-black"></i>' : '<i class="fa-solid fa-xmark text-sm font-black"></i>';
+                            ? 'bg-emerald-950/80 text-emerald-400 border-emerald-500/50' 
+                            : 'bg-rose-950/80 text-rose-400 border-rose-500/50';
+                        const icon = isPaid ? '<i class="fa-solid fa-check text-xs font-black"></i>' : '<i class="fa-solid fa-xmark text-xs font-black"></i>';
                         
                         paymentsHTML += `
-                            <div class="flex items-center justify-between py-2 px-3.5 bg-[#0d121c] rounded-xl border border-slate-800/70 mb-2">
+                            <div class="flex items-center justify-between py-2 px-3.5 bg-[#0d121c] rounded-2xl border border-slate-800/70 mb-2">
                                 <span class="text-xs text-slate-200 font-bold">${res.name}</span>
                                 <div class="flex items-center gap-3">
-                                    <span class="font-bold text-white text-xs">${amount.toFixed(2)} €</span>
-                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="w-10 h-7 rounded-lg border flex items-center justify-center transition-all ${btnClass} active:scale-95 shadow-sm" title="${isPaid ? 'Plătit' : 'Neplătit'}">
+                                    <span class="font-black text-white text-xs">${amount.toFixed(2)} €</span>
+                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="w-11 h-7 rounded-xl border flex items-center justify-center transition-all ${btnClass} active:scale-95 shadow-sm">
                                         ${icon}
                                     </button>
                                 </div>
@@ -564,7 +564,7 @@
                     }
 
                     dueDateHTML = `
-                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-bold ${badgeClass}">
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-bold ${badgeClass} mt-1">
                             <i class="fa-solid ${iconBadge}"></i> ${labelStatus}
                         </div>
                     `;
@@ -572,25 +572,24 @@
 
                 const card = document.createElement('div');
                 card.id = `bill-card-${bill.id}`;
-                card.className = "bg-[#121824] border border-slate-800/90 rounded-2xl overflow-hidden shadow-xl p-4 space-y-3 relative transition-all";
+                card.className = "bg-[#121824] border border-slate-800/90 rounded-3xl overflow-hidden shadow-2xl p-4 space-y-3 relative transition-all";
                 
                 card.innerHTML = `
                     <div class="flex items-center justify-between border-b border-slate-800/70 pb-3">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl ${style.theme} border flex items-center justify-center shrink-0 shadow-md text-base">
+                            <div class="w-11 h-11 rounded-2xl ${style.theme} border flex items-center justify-center shrink-0 shadow-md text-base">
                                 <i class="fa-solid ${style.icon}"></i>
                             </div>
                             <div>
-                                <h3 class="font-bold text-white text-xs tracking-tight">${bill.type}</h3>
-                                <p class="text-[10px] text-slate-400 font-semibold">${dStart} — ${dEnd}</p>
+                                <h3 class="font-black text-white text-sm tracking-tight">${bill.type}</h3>
+                                <p class="text-[11px] text-slate-400 font-semibold">${dStart} — ${dEnd}</p>
+                                <div>${dueDateHTML}</div>
                             </div>
                         </div>
                         <div class="text-right">
                             <span class="text-xl font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
                         </div>
                     </div>
-
-                    ${dueDateHTML ? `<div>${dueDateHTML}</div>` : ''}
 
                     <div class="space-y-1">${paymentsHTML || '<p class="text-[11px] text-slate-500 text-center py-1">Fără locatari activi.</p>'}</div>
 
@@ -621,10 +620,10 @@
             exportContainer.style.top = '-9999px';
             exportContainer.style.left = '0';
             exportContainer.style.width = '380px';
-            exportContainer.style.padding = '18px';
+            exportContainer.style.padding = '20px';
             exportContainer.style.backgroundColor = '#121824';
             exportContainer.style.fontFamily = "'Inter', sans-serif";
-            exportContainer.style.borderRadius = '20px';
+            exportContainer.style.borderRadius = '24px';
             exportContainer.style.border = '1px solid #1e293b';
             exportContainer.style.color = '#f3f4f6';
             exportContainer.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.7)';
@@ -645,11 +644,11 @@
                     const symbol = isPaid ? '✓' : '✕';
 
                     paymentsExportHTML += `
-                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background-color: #0d121c; border: 1px solid rgba(30, 41, 59, 0.8); border-radius: 12px; margin-bottom: 8px;">
-                            <span style="font-size: 12px; color: #f3f4f6; font-weight: 700;">${res.name}</span>
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background-color: #0d121c; border: 1px solid rgba(30, 41, 59, 0.8); border-radius: 16px; margin-bottom: 8px;">
+                            <span style="font-size: 13px; color: #f3f4f6; font-weight: 700;">${res.name}</span>
                             <div style="display: flex; align-items: center; gap: 14px;">
-                                <span style="font-size: 13px; color: #ffffff; font-weight: 900;">${amount.toFixed(2)} €</span>
-                                <div style="width: 32px; height: 26px; border-radius: 8px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900;">
+                                <span style="font-size: 14px; color: #ffffff; font-weight: 900;">${amount.toFixed(2)} €</span>
+                                <div style="width: 36px; height: 28px; border-radius: 10px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900;">
                                     ${symbol}
                                 </div>
                             </div>
@@ -683,29 +682,29 @@
                 }
 
                 dueBadgeExportHTML = `
-                    <div style="margin-top: 8px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 8px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; font-size: 10px; font-weight: 800;">
+                    <div style="margin-top: 5px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 8px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; font-size: 10px; font-weight: 800;">
                         ${labelStatus}
                     </div>
                 `;
             }
 
             exportContainer.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(30, 41, 59, 0.8); padding-bottom: 12px; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(30, 41, 59, 0.8); padding-bottom: 12px; margin-bottom: 12px;">
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <div style="width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3);">
-                            <span style="font-size: 16px; font-weight: bold;">⚡</span>
+                        <div style="width: 44px; height: 44px; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3);">
+                            <span style="font-size: 18px;">⚡</span>
                         </div>
                         <div>
-                            <div style="font-weight: 900; color: #ffffff; font-size: 13px;">${bill.type}</div>
-                            <div style="font-size: 10px; color: #94a3b8; font-weight: 600; margin-top: 2px;">${dStart} — ${dEnd}</div>
+                            <div style="font-weight: 900; color: #ffffff; font-size: 14px;">${bill.type}</div>
+                            <div style="font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 2px;">${dStart} — ${dEnd}</div>
+                            <div>${dueBadgeExportHTML}</div>
                         </div>
                     </div>
                     <div style="text-align: right;">
-                        <span style="font-size: 18px; font-weight: 900; color: #ffffff;">${bill.amount.toFixed(2)} €</span>
+                        <span style="font-size: 20px; font-weight: 900; color: #ffffff;">${bill.amount.toFixed(2)} €</span>
                     </div>
                 </div>
-                <div>${dueBadgeExportHTML}</div>
-                <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 10px;">
+                <div style="display: flex; flex-direction: column; gap: 4px;">
                     ${paymentsExportHTML}
                 </div>
             `;
