@@ -15,26 +15,19 @@
     <link rel="icon" type="image/png" href="https://img.icons8.com/?size=192&id=wFfu6zXx15Yk&format=png&color=000000">
     <link rel="apple-touch-icon" href="https://img.icons8.com/?size=192&id=wFfu6zXx15Yk&format=png&color=000000">
 
-    <!-- PWA Manifest & Service Worker Setup -->
+    <!-- PWA Manifest Inline with Stable PNG Icon -->
     <script>
         const manifestData = {
             "name": "HomeShare App",
             "short_name": "HomeShare",
             "start_url": "./",
-            "scope": "./",
             "display": "standalone",
             "background_color": "#090d16",
             "theme_color": "#090d16",
             "icons": [
                 {
                     "src": "https://img.icons8.com/?size=192&id=wFfu6zXx15Yk&format=png&color=000000",
-                    "sizes": "192x192",
-                    "type": "image/png",
-                    "purpose": "any maskable"
-                },
-                {
-                    "src": "https://img.icons8.com/?size=512&id=wFfu6zXx15Yk&format=png&color=000000",
-                    "sizes": "512x512",
+                    "sizes": "192x192 512x512",
                     "type": "image/png",
                     "purpose": "any maskable"
                 }
@@ -48,11 +41,7 @@
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                const swCode = `
-                    self.addEventListener('install', (e) => { self.skipWaiting(); });
-                    self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
-                    self.addEventListener('fetch', (e) => { e.respondWith(fetch(e.request).catch(() => caches.match(e.request))); });
-                `;
+                const swCode = `self.addEventListener('fetch', function(event) { event.respondWith(fetch(event.request)); });`;
                 const swBlob = new Blob([swCode], { type: 'text/javascript' });
                 navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(err => console.log('SW failed', err));
             });
@@ -117,7 +106,6 @@
 
     <div id="toast-container"></div>
 
-    <!-- PWA Install Banner -->
     <div id="install-banner" class="hidden fixed bottom-20 left-4 right-4 z-50 bg-[#121824] border border-amber-500/40 p-4 rounded-2xl shadow-2xl flex items-center justify-between">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-500 text-lg">
@@ -301,7 +289,6 @@
         </div>
     </div>
 
-    <!-- SCRIPT FIREBASE ȘI LOGICĂ APLICAȚIE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -574,11 +561,11 @@
                         const labelText = isPaid ? 'Plătit' : 'Neplătit';
                         
                         paymentsHTML += `
-                            <div class="flex items-center justify-between py-2 px-3.5 bg-[#0d121c] rounded-2xl border border-slate-800/70 mb-2">
+                            <div class="flex items-center justify-between py-2 px-3.5 bg-[#0d121c] rounded-xl border border-slate-800/70 mb-2">
                                 <span class="text-xs text-slate-200 font-bold">${res.name}</span>
                                 <div class="flex items-center gap-3">
                                     <span class="font-black text-white text-sm">${amount.toFixed(2)} €</span>
-                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="px-3 py-1.5 rounded-xl border flex items-center gap-2 transition-all ${btnClass} active:scale-95 shadow-sm text-xs font-bold min-w-[85px] justify-center">
+                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="px-3 py-1.5 rounded-xl border flex items-center gap-2 transition-all ${btnClass} active:scale-95 shadow-sm text-xs font-bold min-w-[95px] justify-center">
                                         ${icon} <span>${labelText}</span>
                                     </button>
                                 </div>
@@ -590,7 +577,7 @@
                 const dStart = new Date(bill.startDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
                 const dEnd = new Date(bill.endDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
                 
-                let dueDateHTML = '';
+                let dueDateBadgeHTML = '';
                 if(bill.dueDate) {
                     const today = new Date();
                     today.setHours(0,0,0,0);
@@ -611,8 +598,8 @@
                         labelStatus = `Expiră în ${diffDays} zile`;
                     }
 
-                    dueDateHTML = `
-                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-bold ${badgeClass}">
+                    dueDateBadgeHTML = `
+                        <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[10px] font-bold ${badgeClass}">
                             <i class="fa-solid ${iconBadge}"></i> ${labelStatus}
                         </div>
                     `;
@@ -620,36 +607,36 @@
 
                 const card = document.createElement('div');
                 card.id = `bill-card-${bill.id}`;
-                card.className = "bg-[#121824] border border-slate-800/90 rounded-3xl overflow-hidden shadow-2xl p-4 space-y-3 relative transition-all";
+                card.className = "bg-[#121824] border border-slate-800/90 rounded-2xl overflow-hidden shadow-xl p-4 space-y-3 relative transition-all";
                 
                 card.innerHTML = `
                     <div class="flex items-center justify-between border-b border-slate-800/70 pb-3">
                         <div class="flex items-center gap-3">
-                            <div class="w-11 h-11 rounded-2xl ${style.theme} border flex items-center justify-center shrink-0 shadow-md text-base">
+                            <div class="w-10 h-10 rounded-xl ${style.theme} border flex items-center justify-center shrink-0 shadow-md text-base">
                                 <i class="fa-solid ${style.icon}"></i>
                             </div>
                             <div>
-                                <h3 class="font-black text-white text-sm tracking-tight">${bill.type}</h3>
-                                <p class="text-[11px] text-slate-400 font-semibold">${dStart} — ${dEnd}</p>
+                                <h3 class="font-black text-white text-xs tracking-tight">${bill.type}</h3>
+                                <p class="text-[10px] text-slate-400 font-semibold">${dStart} — ${dEnd}</p>
                             </div>
                         </div>
                         <div class="text-right">
-                            <span class="text-2xl font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
-                            <div class="mt-1">${dueDateHTML}</div>
+                            <span class="text-xl font-black text-white tracking-tight block">${bill.amount.toFixed(2)} €</span>
+                            <div class="mt-1 flex justify-end">${dueDateBadgeHTML}</div>
                         </div>
                     </div>
 
                     <div class="space-y-1">${paymentsHTML || '<p class="text-[11px] text-slate-500 text-center py-1">Fără locatari activi.</p>'}</div>
 
                     <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800/50">
-                        <button onclick="window.shareCard('${bill.id}')" class="py-2.5 bg-emerald-950/60 hover:bg-emerald-900 text-emerald-400 border border-emerald-500/40 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all shadow-sm">
-                            <i class="fa-brands fa-whatsapp text-sm"></i> Distribuie
+                        <button onclick="window.shareCard('${bill.id}')" class="py-1.5 px-2.5 bg-emerald-950/60 hover:bg-emerald-900 text-emerald-400 border border-emerald-500/40 rounded-lg flex items-center justify-center gap-1 text-[11px] font-bold transition-all shadow-sm">
+                            <i class="fa-brands fa-whatsapp text-xs"></i> Distribuie
                         </button>
-                        <button onclick="window.editBill('${bill.id}')" class="py-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl flex items-center justify-center gap-1.5 text-xs font-semibold transition-all shadow-sm">
-                            <i class="fa-solid fa-pen text-[10px]"></i> Editează
+                        <button onclick="window.editBill('${bill.id}')" class="py-1.5 px-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg flex items-center justify-center gap-1 text-[11px] font-semibold transition-all shadow-sm">
+                            <i class="fa-solid fa-pen text-[9px]"></i> Editează
                         </button>
-                        <button onclick="window.confirmDeleteAction('bill', '${bill.id}')" class="py-2.5 bg-rose-950/60 hover:bg-rose-900 text-rose-400 border border-rose-500/40 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all shadow-sm">
-                            <i class="fa-solid fa-trash text-[10px]"></i> Șterge
+                        <button onclick="window.confirmDeleteAction('bill', '${bill.id}')" class="py-1.5 px-2.5 bg-rose-950/60 hover:bg-rose-900 text-rose-400 border border-rose-500/40 rounded-lg flex items-center justify-center gap-1 text-[11px] font-bold transition-all shadow-sm">
+                            <i class="fa-solid fa-trash text-[9px]"></i> Șterge
                         </button>
                     </div>
                 `;
@@ -668,10 +655,10 @@
             exportContainer.style.top = '-9999px';
             exportContainer.style.left = '0';
             exportContainer.style.width = '380px';
-            exportContainer.style.padding = '20px';
+            exportContainer.style.padding = '18px';
             exportContainer.style.backgroundColor = '#121824';
             exportContainer.style.fontFamily = "'Inter', sans-serif";
-            exportContainer.style.borderRadius = '24px';
+            exportContainer.style.borderRadius = '20px';
             exportContainer.style.border = '1px solid #1e293b';
             exportContainer.style.color = '#f3f4f6';
             exportContainer.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.7)';
@@ -693,11 +680,11 @@
                     const labelText = isPaid ? 'Plătit' : 'Neplătit';
 
                     paymentsExportHTML += `
-                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background-color: #0d121c; border: 1px solid rgba(30, 41, 59, 0.8); border-radius: 16px; margin-bottom: 8px;">
-                            <span style="font-size: 13px; color: #f3f4f6; font-weight: 700;">${res.name}</span>
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background-color: #0d121c; border: 1px solid rgba(30, 41, 59, 0.8); border-radius: 12px; margin-bottom: 8px;">
+                            <span style="font-size: 12px; color: #f3f4f6; font-weight: 700;">${res.name}</span>
                             <div style="display: flex; align-items: center; gap: 14px;">
-                                <span style="font-size: 14px; color: #ffffff; font-weight: 900;">${amount.toFixed(2)} €</span>
-                                <div style="padding: 4px 12px; border-radius: 10px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 900;">
+                                <span style="font-size: 13px; color: #ffffff; font-weight: 900;">${amount.toFixed(2)} €</span>
+                                <div style="padding: 4px 10px; border-radius: 8px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 900; min-width: 85px; justify-content: center;">
                                     <span>${symbol}</span> <span>${labelText}</span>
                                 </div>
                             </div>
@@ -731,26 +718,26 @@
                 }
 
                 dueBadgeExportHTML = `
-                    <div style="margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 8px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; font-size: 10px; font-weight: 800;">
+                    <div style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; font-size: 10px; font-weight: 800;">
                         ${labelStatus}
                     </div>
                 `;
             }
 
             exportContainer.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(30, 41, 59, 0.8); padding-bottom: 12px; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(30, 41, 59, 0.8); padding-bottom: 12px; margin-bottom: 10px;">
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <div style="width: 44px; height: 44px; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3);">
-                            <span style="font-size: 18px;">⚡</span>
+                        <div style="width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3);">
+                            <span style="font-size: 16px;">⚡</span>
                         </div>
                         <div>
-                            <div style="font-weight: 900; color: #ffffff; font-size: 14px;">${bill.type}</div>
-                            <div style="font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 2px;">${dStart} — ${dEnd}</div>
+                            <div style="font-weight: 900; color: #ffffff; font-size: 13px;">${bill.type}</div>
+                            <div style="font-size: 10px; color: #94a3b8; font-weight: 600; margin-top: 2px;">${dStart} — ${dEnd}</div>
                         </div>
                     </div>
                     <div style="text-align: right;">
-                        <span style="font-size: 20px; font-weight: 900; color: #ffffff;">${bill.amount.toFixed(2)} €</span>
-                        <div>${dueBadgeExportHTML}</div>
+                        <span style="font-size: 18px; font-weight: 900; color: #ffffff; display: block;">${bill.amount.toFixed(2)} €</span>
+                        <div style="margin-top: 4px; display: flex; justify-content: flex-end;">${dueBadgeExportHTML}</div>
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 4px;">
