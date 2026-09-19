@@ -11,11 +11,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="HomeShare">
     
-    <!-- Custom SVG Favicon (House Logo) -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23c8d3de' d='M42,39H6v2c0,1.105,0.895,2,2,2h32c1.105,0,2-0.895,2-2V39z'/%3E%3Cpath fill='%23f4f4f4' d='M42,39H6V20L24,3l18,17V39z'/%3E%3Cpath fill='%23de490d' d='M13,25h10c0.552,0,1,0.448,1,1v17H12V26C12,25.448,12.448,25,13,25z'/%3E%3Cpath fill='%23b9360c' d='M44.495,19.507L25.326,2.503C24.948,2.168,24.474,2,24,2s-0.948,0.168-1.326,0.503L3.505,19.507c-0.42,0.374-0.449,1.02-0.064,1.43l1.636,1.745c0.369,0.394,0.984,0.424,1.39,0.067L24,7.428L41.533,22.75c0.405,0.356,1.021,0.327,1.39-0.067l1.636-1.745C44.944,20.527,44.915,19.881,44.495,19.507z'/%3E%3Cpath fill='%230a85d9' d='M29,25h6c0.552,0,1,0.448,1,1v6c0,0.552-0.448,1-1,1h-6c-0.552,0-1-0.448-1-1v-6C28,25.448,28.448,25,29,25z'/%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23c8d3de' d='M42,39H6v2c0,1.105,0.895,2,2,2h32c1.105,0,2-0.895,2-2V39z'/%3E%3Cpath fill='%23f4f4f4' d='M42,39H6V20L24,3l18,17V39z'/%3E%3C/svg%3E">
+    <!-- Custom PNG Favicon & App Icon -->
+    <link rel="icon" type="image/png" href="https://img.icons8.com/?size=192&id=wFfu6zXx15Yk&format=png&color=000000">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/?size=192&id=wFfu6zXx15Yk&format=png&color=000000">
 
-    <!-- PWA Manifest & Service Worker Setup -->
+    <!-- PWA Manifest Inline with Stable PNG Icon -->
     <script>
         const manifestData = {
             "name": "HomeShare App",
@@ -26,9 +26,9 @@
             "theme_color": "#090d16",
             "icons": [
                 {
-                    "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23f4f4f4' d='M42,39H6V20L24,3l18,17V39z'/%3E%3C/svg%3E",
+                    "src": "https://img.icons8.com/?size=192&id=wFfu6zXx15Yk&format=png&color=000000",
                     "sizes": "192x192 512x512",
-                    "type": "image/svg+xml",
+                    "type": "image/png",
                     "purpose": "any maskable"
                 }
             ]
@@ -109,10 +109,8 @@
     <header class="pt-5 pb-3 px-5 sticky top-0 z-40 bg-darkBg/90 backdrop-blur-md border-b border-slate-800/40">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <h1 class="text-xl font-black tracking-tight text-white flex items-center gap-2.5">
-                <div class="w-9 h-9 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-md">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-                        <path d="M11.47 2.47a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 1 1-1.06 1.06L18 10.56V19.5a2.25 2.25 0 0 1-2.25 2.25h-9A2.25 2.25 0 0 1 4.5 19.5v-8.94l-.72.72a.75.75 0 0 1-1.06-1.06l7.5-7.5Z" />
-                    </svg>
+                <div class="w-9 h-9 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-md overflow-hidden p-1.5">
+                    <img src="https://img.icons8.com/?size=100&id=wFfu6zXx15Yk&format=png&color=000000" class="w-full h-full object-contain" alt="Home">
                 </div>
                 HomeShare
             </h1>
@@ -332,9 +330,11 @@
 
         function updateConnectionStatus(isConnected) {
             const indicator = document.getElementById('connection-status');
-            indicator.className = isConnected 
-                ? "w-2.5 h-2.5 rounded-full bg-accentGreen shadow-[0_0_8px_rgba(16,185,129,0.8)]" 
-                : "w-2.5 h-2.5 rounded-full bg-slate-600 shadow-[0_0_8px_rgba(71,85,105,0.5)]";
+            if(indicator) {
+                indicator.className = isConnected 
+                    ? "w-2.5 h-2.5 rounded-full bg-accentGreen shadow-[0_0_8px_rgba(16,185,129,0.8)]" 
+                    : "w-2.5 h-2.5 rounded-full bg-slate-600 shadow-[0_0_8px_rgba(71,85,105,0.5)]";
+            }
         }
 
         function getProviderStyle(typeName) {
@@ -355,20 +355,29 @@
                 const iconContainer = document.getElementById(`icon-${t}`);
                 const text = document.getElementById(`text-${t}`);
                 
+                if(!btn) return;
                 if (t === tab) {
                     btn.classList.add('text-amber-500');
                     btn.classList.remove('text-slate-400', 'hover:text-white');
-                    iconContainer.className = "w-12 h-12 flex items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-400 text-slate-950 shadow-lg shadow-amber-500/20 transform -translate-y-2 transition-all";
-                    iconContainer.innerHTML = getNavIcon(t, 'xl');
-                    text.classList.remove('mt-1', 'font-medium');
-                    text.classList.add('mt-[-4px]', 'font-semibold');
+                    if(iconContainer) {
+                        iconContainer.className = "w-12 h-12 flex items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-400 text-slate-950 shadow-lg shadow-amber-500/20 transform -translate-y-2 transition-all";
+                        iconContainer.innerHTML = getNavIcon(t, 'xl');
+                    }
+                    if(text) {
+                        text.classList.remove('mt-1', 'font-medium');
+                        text.classList.add('mt-[-4px]', 'font-semibold');
+                    }
                 } else {
                     btn.classList.remove('text-amber-500');
                     btn.classList.add('text-slate-400', 'hover:text-white');
-                    iconContainer.className = "w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800/40 transition-all duration-300";
-                    iconContainer.innerHTML = getNavIcon(t, 'lg');
-                    text.classList.remove('mt-[-4px]', 'font-semibold');
-                    text.classList.add('mt-1', 'font-medium');
+                    if(iconContainer) {
+                        iconContainer.className = "w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800/40 transition-all duration-300";
+                        iconContainer.innerHTML = getNavIcon(t, 'lg');
+                    }
+                    if(text) {
+                        text.classList.remove('mt-[-4px]', 'font-semibold');
+                        text.classList.add('mt-1', 'font-medium');
+                    }
                 }
             });
 
@@ -419,6 +428,7 @@
 
         window.renderCurrentView = function() {
             const container = document.getElementById('app-container');
+            if(!container) return;
             
             if (window.state.currentTab === 'facturi') {
                 container.innerHTML = `
@@ -516,11 +526,11 @@
                         const icon = isPaid ? '<i class="fa-solid fa-check text-sm font-black"></i>' : '<i class="fa-solid fa-xmark text-sm font-black"></i>';
                         
                         paymentsHTML += `
-                            <div class="flex items-center justify-between py-2.5 px-3.5 bg-[#0d121c] rounded-xl border border-slate-800/70 mb-2">
+                            <div class="flex items-center justify-between py-2 px-3.5 bg-[#0d121c] rounded-xl border border-slate-800/70 mb-2">
                                 <span class="text-xs text-slate-200 font-bold">${res.name}</span>
                                 <div class="flex items-center gap-3">
                                     <span class="font-bold text-white text-xs">${amount.toFixed(2)} €</span>
-                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="w-12 h-8 rounded-lg border flex items-center justify-center transition-all ${btnClass} active:scale-95 shadow-sm" title="${isPaid ? 'Plătit' : 'Neplătit'}">
+                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="w-10 h-7 rounded-lg border flex items-center justify-center transition-all ${btnClass} active:scale-95 shadow-sm" title="${isPaid ? 'Plătit' : 'Neplătit'}">
                                         ${icon}
                                     </button>
                                 </div>
@@ -554,7 +564,7 @@
                     }
 
                     dueDateHTML = `
-                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-bold ${badgeClass} mt-1.5">
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-bold ${badgeClass}">
                             <i class="fa-solid ${iconBadge}"></i> ${labelStatus}
                         </div>
                     `;
@@ -562,7 +572,6 @@
 
                 const card = document.createElement('div');
                 card.id = `bill-card-${bill.id}`;
-                // Exact layout as screenshot image_dc6edc.png with balanced text size
                 card.className = "bg-[#121824] border border-slate-800/90 rounded-2xl overflow-hidden shadow-xl p-4 space-y-3 relative transition-all";
                 
                 card.innerHTML = `
@@ -577,10 +586,11 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <span class="text-lg font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
-                            <div>${dueDateHTML}</div>
+                            <span class="text-xl font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
                         </div>
                     </div>
+
+                    ${dueDateHTML ? `<div>${dueDateHTML}</div>` : ''}
 
                     <div class="space-y-1">${paymentsHTML || '<p class="text-[11px] text-slate-500 text-center py-1">Fără locatari activi.</p>'}</div>
 
@@ -673,7 +683,7 @@
                 }
 
                 dueBadgeExportHTML = `
-                    <div style="margin-top: 5px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 8px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; font-size: 10px; font-weight: 800;">
+                    <div style="margin-top: 8px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 8px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; font-size: 10px; font-weight: 800;">
                         ${labelStatus}
                     </div>
                 `;
@@ -692,10 +702,10 @@
                     </div>
                     <div style="text-align: right;">
                         <span style="font-size: 18px; font-weight: 900; color: #ffffff;">${bill.amount.toFixed(2)} €</span>
-                        <div>${dueBadgeExportHTML}</div>
                     </div>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div>${dueBadgeExportHTML}</div>
+                <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 10px;">
                     ${paymentsExportHTML}
                 </div>
             `;
@@ -970,12 +980,14 @@
         function showModal(id) {
             const m = document.getElementById(id);
             const c = document.getElementById(`${id}-content`);
+            if(!m || !c) return;
             m.classList.remove('hidden');
             setTimeout(() => { m.classList.remove('opacity-0'); c.classList.remove('scale-95'); }, 10);
         }
         window.closeModal = (id) => {
             const m = document.getElementById(id);
             const c = document.getElementById(`${id}-content`);
+            if(!m || !c) return;
             m.classList.add('opacity-0'); c.classList.add('scale-95');
             setTimeout(() => m.classList.add('hidden'), 300);
         };
@@ -1045,7 +1057,6 @@
                 onSnapshot(collection(db, 'artifacts', platformAppId, 'public', 'data', 'bills'), 
                     (snap) => {
                         state.bills = [];
-                        snap.graph = true;
                         snap.forEach(d => state.bills.push({id: d.id, ...d.data()}));
                         if(state.currentTab === 'facturi') renderCurrentView();
                     }
