@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="HomeShare">
     
-    <!-- PWA Manifest Inline -->
+    <!-- PWA Manifest Inline cu Logo Casă -->
     <script>
         const manifestData = {
             "name": "HomeShare App",
@@ -44,8 +44,8 @@
                 extend: {
                     colors: {
                         darkBg: '#090d16',
-                        cardBg: '#111827',
-                        cardBorder: '#1f2937',
+                        cardBg: '#121824',
+                        cardBorder: '#1e293b',
                         accentGreen: '#10b981',
                         accentOrange: '#f59e0b',
                     }
@@ -69,21 +69,21 @@
             -webkit-tap-highlight-color: transparent;
         }
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
         .modal-overlay { background-color: rgba(9, 13, 22, 0.85); backdrop-filter: blur(8px); }
-        input, select { background-color: #090d16; color: #f3f4f6; border-color: #1f2937; color-scheme: dark; }
+        input, select { background-color: #0b101d; color: #f3f4f6; border-color: #1e293b; color-scheme: dark; }
         input:focus, select:focus { border-color: #f59e0b; outline: none; box-shadow: 0 0 0 1px #f59e0b; }
         .animate-slideUp { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         
-        .theme-blue { color: #60a5fa; background-color: rgba(96, 165, 250, 0.1); border-color: rgba(96, 165, 250, 0.2); }
-        .theme-amber { color: #fbbf24; background-color: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.2); }
-        .theme-purple { color: #c084fc; background-color: rgba(192, 132, 252, 0.1); border-color: rgba(192, 132, 252, 0.2); }
-        .theme-teal { color: #2dd4bf; background-color: rgba(45, 212, 191, 0.1); border-color: rgba(45, 212, 191, 0.2); }
-        .theme-slate { color: #94a3b8; background-color: rgba(148, 163, 184, 0.1); border-color: rgba(148, 163, 184, 0.2); }
+        .theme-blue { color: #60a5fa; background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(59, 130, 246, 0.05)); border-color: rgba(96, 165, 250, 0.3); }
+        .theme-amber { color: #fbbf24; background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.05)); border-color: rgba(251, 191, 36, 0.3); }
+        .theme-purple { color: #c084fc; background: linear-gradient(135deg, rgba(192, 132, 252, 0.15), rgba(168, 85, 247, 0.05)); border-color: rgba(192, 132, 252, 0.3); }
+        .theme-teal { color: #2dd4bf; background: linear-gradient(135deg, rgba(45, 212, 191, 0.15), rgba(20, 184, 166, 0.05)); border-color: rgba(45, 212, 191, 0.3); }
+        .theme-slate { color: #94a3b8; background: linear-gradient(135deg, rgba(148, 163, 184, 0.15), rgba(100, 116, 139, 0.05)); border-color: rgba(148, 163, 184, 0.3); }
 
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none; }
-        .toast { background: #111827; border: 1px solid #1f2937; padding: 12px 16px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); font-size: 0.875rem; display: flex; align-items: center; gap: 12px; animation: toastIn 0.3s forwards; }
+        .toast { background: #121824; border: 1px solid #1e293b; padding: 12px 16px; border-radius: 14px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); font-size: 0.875rem; display: flex; align-items: center; gap: 12px; animation: toastIn 0.3s forwards; }
         .toast.fade-out { animation: toastOut 0.3s forwards; }
         @keyframes toastIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes toastOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-20px); } }
@@ -93,11 +93,11 @@
 
     <div id="toast-container"></div>
 
-    <header class="pt-6 pb-2 px-5 sticky top-0 z-40 bg-darkBg/90 backdrop-blur-md">
+    <header class="pt-5 pb-3 px-5 sticky top-0 z-40 bg-darkBg/90 backdrop-blur-md border-b border-slate-800/40">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <h1 class="text-xl font-black tracking-tight text-white flex items-center gap-2.5">
-                <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-sm">
-                    <i class="fa-solid fa-house text-base"></i>
+                <div class="w-9 h-9 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-md">
+                    <i class="fa-solid fa-house text-sm"></i>
                 </div>
                 HomeShare
             </h1>
@@ -106,7 +106,7 @@
     </header>
 
     <!-- Main Container -->
-    <main id="app-container" class="w-full max-w-md mx-auto px-4 flex-1">
+    <main id="app-container" class="w-full max-w-md mx-auto px-4 flex-1 mt-4">
         <!-- Conținut dinamic -->
     </main>
 
@@ -144,7 +144,7 @@
 
     <!-- MODAL: FACTURĂ -->
     <div id="modal-bill" class="fixed inset-0 modal-overlay hidden z-[60] flex items-center justify-center p-4 opacity-0 transition-opacity">
-        <div class="bg-[#111827] rounded-3xl border border-slate-800 w-full max-w-sm overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-bill-content">
+        <div class="bg-[#121824] rounded-3xl border border-slate-800 w-full max-w-sm overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-bill-content">
             <div class="px-5 py-4 border-b border-slate-800/60 flex items-center justify-between">
                 <h3 class="text-base font-bold text-white flex items-center gap-2" id="bill-modal-title">Factură Nouă</h3>
                 <button onclick="closeModal('modal-bill')" class="text-slate-400 hover:text-white transition-colors p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -182,7 +182,7 @@
 
     <!-- MODAL: LOCATAR -->
     <div id="modal-resident" class="fixed inset-0 modal-overlay hidden z-[60] flex items-center justify-center p-4 opacity-0 transition-opacity">
-        <div class="bg-[#111827] rounded-3xl border border-slate-800 w-full max-w-sm overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-resident-content">
+        <div class="bg-[#121824] rounded-3xl border border-slate-800 w-full max-w-sm overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-resident-content">
             <div class="px-5 py-4 border-b border-slate-800/60 flex items-center justify-between">
                 <h3 class="text-base font-bold text-white flex items-center gap-2" id="resident-modal-title">Adaugă Locatar</h3>
                 <button onclick="closeModal('modal-resident')" class="text-slate-400 hover:text-white transition-colors p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -218,7 +218,7 @@
 
     <!-- MODAL: FURNIZOR -->
     <div id="modal-provider" class="fixed inset-0 modal-overlay hidden z-[60] flex items-center justify-center p-4 opacity-0 transition-opacity">
-        <div class="bg-[#111827] rounded-3xl border border-slate-800 w-full max-w-sm overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-provider-content">
+        <div class="bg-[#121824] rounded-3xl border border-slate-800 w-full max-w-sm overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-provider-content">
             <div class="px-5 py-4 border-b border-slate-800/60 flex items-center justify-between">
                 <h3 class="text-base font-bold text-white flex items-center gap-2" id="provider-modal-title">Adaugă Furnizor</h3>
                 <button onclick="closeModal('modal-provider')" class="text-slate-400 hover:text-white transition-colors p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -246,7 +246,7 @@
 
     <!-- MODAL: CONFIRMARE ȘTERGERE -->
     <div id="modal-confirm" class="fixed inset-0 modal-overlay hidden z-[70] flex items-center justify-center p-4 opacity-0 transition-opacity">
-        <div class="bg-[#111827] rounded-3xl border border-red-900/30 w-full max-w-[280px] overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-confirm-content">
+        <div class="bg-[#121824] rounded-3xl border border-red-900/30 w-full max-w-[280px] overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-confirm-content">
             <div class="p-6 text-center">
                 <div class="w-14 h-14 rounded-full bg-red-500/10 text-red-500 mx-auto flex items-center justify-center mb-4 border border-red-500/20">
                     <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
@@ -261,7 +261,6 @@
         </div>
     </div>
 
-    <!-- Firebase & App Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -454,7 +453,7 @@
                             <h2 class="text-lg font-extrabold tracking-tight">Setări</h2>
                         </div>
                         
-                        <div class="bg-[#111827]/90 border border-slate-800/80 rounded-3xl p-4 shadow-xl mt-4 text-center">
+                        <div class="bg-[#121824]/90 border border-slate-800/80 rounded-3xl p-4 shadow-xl mt-4 text-center">
                             <div class="w-12 h-12 mx-auto rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-xl mb-3">
                                 <i class="fa-solid fa-database"></i>
                             </div>
@@ -499,16 +498,16 @@
                     if (amount > 0.01) {
                         const isPaid = bill.payments[res.id] || false;
                         const btnClass = isPaid 
-                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
-                            : 'bg-red-500/15 text-red-400 border-red-500/30';
-                        const icon = isPaid ? '<i class="fa-solid fa-check text-xs"></i>' : '<i class="fa-solid fa-xmark text-xs font-bold"></i>';
+                            ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' 
+                            : 'bg-red-500/20 text-red-400 border-red-500/40';
+                        const icon = isPaid ? '<i class="fa-solid fa-check text-xs font-bold"></i>' : '<i class="fa-solid fa-xmark text-xs font-black"></i>';
                         
                         paymentsHTML += `
-                            <div class="flex items-center justify-between py-2 px-3 bg-slate-900/50 rounded-xl border border-slate-800/60">
-                                <span class="text-xs text-slate-200 font-medium truncate max-w-[150px]">${res.name}</span>
+                            <div class="flex items-center justify-between py-2.5 px-3.5 bg-slate-900/60 rounded-2xl border border-slate-800/50 mb-2">
+                                <span class="text-xs text-slate-200 font-semibold tracking-wide">${res.name}</span>
                                 <div class="flex items-center gap-3">
-                                    <span class="font-bold text-white text-xs">${amount.toFixed(2)} €</span>
-                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="w-7 h-7 rounded-lg border flex items-center justify-center transition-all ${btnClass} active:scale-95 shadow-sm" title="${isPaid ? 'Plătit' : 'Neplătit'}">
+                                    <span class="font-black text-white text-xs">${amount.toFixed(2)} €</span>
+                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="w-7 h-7 rounded-xl border flex items-center justify-center transition-all ${btnClass} active:scale-95 shadow-sm" title="${isPaid ? 'Plătit' : 'Neplătit'}">
                                         ${icon}
                                     </button>
                                 </div>
@@ -543,7 +542,7 @@
                     }
 
                     dueDateHTML = `
-                        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg border text-[10px] font-semibold ${badgeClass} mt-1">
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[10px] font-bold ${badgeClass} mt-2">
                             <i class="fa-solid ${iconBadge}"></i> ${labelStatus}
                         </div>
                     `;
@@ -551,37 +550,43 @@
 
                 const card = document.createElement('div');
                 card.id = `bill-card-${bill.id}`;
-                card.className = "bg-[#111827] border border-slate-800/90 rounded-2xl overflow-hidden shadow-xl p-3.5 space-y-3 relative";
+                card.className = "bg-[#141c2b] border border-slate-800/90 rounded-[28px] overflow-hidden shadow-2xl p-4 space-y-3.5 relative transition-all";
+                
+                // NOU FORMAT TOTALMENT DIFERIT PENTRU CARDURI (Stil modern inspirat din cardurile bancare)
                 card.innerHTML = `
-                    <div class="flex justify-between items-start gap-2">
-                        <div class="flex items-center gap-3 overflow-hidden">
-                            <div class="w-10 h-10 rounded-xl ${style.theme} border flex items-center justify-center shrink-0 shadow-inner">
-                                <i class="fa-solid ${style.icon} text-sm"></i>
+                    <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-2xl ${style.theme} border flex items-center justify-center shrink-0 shadow-lg">
+                                <i class="fa-solid ${style.icon} text-base"></i>
                             </div>
-                            <div class="overflow-hidden leading-tight">
-                                <h3 class="font-bold text-white text-xs truncate max-w-[140px]">${bill.type}</h3>
-                                <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5">${dStart} — ${dEnd}</p>
-                                ${dueDateHTML}
+                            <div>
+                                <h3 class="font-extrabold text-white text-sm tracking-tight">${bill.type}</h3>
+                                <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">${dStart} — ${dEnd}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <div class="text-right">
-                                <span class="block text-base font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
-                            </div>
-                            <div class="flex items-center gap-1 bg-slate-900/90 border border-slate-800/80 p-1 rounded-xl shadow-sm">
-                                <button onclick="window.shareCard('${bill.id}')" class="w-7 h-7 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg flex items-center justify-center text-xs transition-all" title="Distribuie WhatsApp">
-                                    <i class="fa-brands fa-whatsapp text-sm"></i>
-                                </button>
-                                <button onclick="window.editBill('${bill.id}')" class="w-7 h-7 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg flex items-center justify-center text-xs transition-all" title="Editează">
-                                    <i class="fa-solid fa-pen text-[10px]"></i>
-                                </button>
-                                <button onclick="window.confirmDeleteAction('bill', '${bill.id}')" class="w-7 h-7 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg flex items-center justify-center text-xs transition-all" title="Șterge">
-                                    <i class="fa-solid fa-trash text-[10px]"></i>
-                                </button>
-                            </div>
+                        <div class="text-right">
+                            <span class="text-lg font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 gap-1.5 pt-2 border-t border-slate-800/60">${paymentsHTML || '<p class="text-[11px] text-slate-500 text-center">Fără locatari activi.</p>'}</div>
+
+                    <div class="flex items-center justify-between pt-1">
+                        <div>
+                            ${dueDateHTML}
+                        </div>
+                        <div class="flex items-center gap-1.5 bg-[#0b101d] border border-slate-800/80 p-1.5 rounded-2xl shadow-inner">
+                            <button onclick="window.shareCard('${bill.id}')" class="w-8 h-8 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 rounded-xl flex items-center justify-center text-xs transition-all shadow-sm" title="Distribuie WhatsApp">
+                                <i class="fa-brands fa-whatsapp text-base"></i>
+                            </button>
+                            <button onclick="window.editBill('${bill.id}')" class="w-8 h-8 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl flex items-center justify-center text-xs transition-all shadow-sm" title="Editează">
+                                <i class="fa-solid fa-pen text-xs"></i>
+                            </button>
+                            <button onclick="window.confirmDeleteAction('bill', '${bill.id}')" class="w-8 h-8 bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 rounded-xl flex items-center justify-center text-xs transition-all shadow-sm" title="Șterge">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pt-2">${paymentsHTML || '<p class="text-[11px] text-slate-500 text-center py-2">Fără locatari activi.</p>'}</div>
                 `;
                 container.appendChild(card);
             });
@@ -591,9 +596,9 @@
             const originalCard = document.getElementById(`bill-card-${billId}`);
             if(!originalCard) return;
 
-            showToast('Se generează imaginea exactă pentru WhatsApp...', 'success');
+            showToast('Se pregătește imaginea perfectă pentru WhatsApp...', 'success');
 
-            // Creează un container invizibil dar cu lățime fixă pentru mobil (380px) ca să iasă perfect
+            // Creăm un element dedicat în afara ecranului, curat și optimizat exclusiv pentru randarea imaginii
             const wrapper = document.createElement('div');
             wrapper.style.position = 'fixed';
             wrapper.style.top = '-9999px';
@@ -602,8 +607,9 @@
             wrapper.style.zIndex = '99999';
 
             const clone = originalCard.cloneNode(true);
-            // Ascunde butoanele de acțiune din imaginea exportată (WhatsApp, edit, delete) ca să arate curat
-            const actionContainer = clone.querySelector('.flex.items-center.gap-1.bg-slate-900\\/90');
+            
+            // Eliminăm butoanele de acțiune (share, edit, delete) din imaginea care se trimite, păstrând doar informația pură
+            const actionContainer = clone.querySelector('.flex.items-center.gap-1\\.5.bg-\\[\\#0b101d\\]');
             if(actionContainer) actionContainer.remove();
 
             wrapper.appendChild(clone);
@@ -611,7 +617,7 @@
 
             try {
                 const canvas = await html2canvas(clone, {
-                    backgroundColor: '#111827',
+                    backgroundColor: '#0f172a',
                     scale: 3,
                     logging: false,
                     useCORS: true
@@ -635,10 +641,10 @@
                     }
                     
                     const link = document.createElement('a');
-                    link.download = `factura.png`;
+                    link.download = `factura_utilitati.png`;
                     link.href = canvas.toDataURL();
                     link.click();
-                    showToast('Imaginea a fost salvată în galerie!');
+                    showToast('Imaginea a fost salvată cu succes!');
                 });
             } catch (err) {
                 if(document.body.contains(wrapper)) document.body.removeChild(wrapper);
@@ -658,7 +664,7 @@
                 const icon = res.weight > 1 ? '<i class="fa-solid fa-user-group text-amber-500"></i>' : '<i class="fa-solid fa-user text-slate-400"></i>';
                 
                 const card = document.createElement('div');
-                card.className = `bg-[#111827]/90 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between shadow-lg ${opacity}`;
+                card.className = `bg-[#121824] border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between shadow-lg ${opacity}`;
                 card.innerHTML = `
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-sm shadow-inner">
@@ -686,7 +692,7 @@
             window.state.providers.forEach(prov => {
                 const style = getProviderStyle(prov.name);
                 const card = document.createElement('div');
-                card.className = `bg-[#111827]/90 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between shadow-lg`;
+                card.className = `bg-[#121824] border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between shadow-lg`;
                 card.innerHTML = `
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl ${style.theme} border flex items-center justify-center text-sm">
@@ -948,6 +954,8 @@
                         if(state.currentTab === 'furnizori' || state.currentTab === 'facturi') renderCurrentView();
                     }
                 );
+
+                onSnapshot(collection(db, 'bills'), (snap) => {}); // placeholder compat
 
                 onSnapshot(collection(db, 'artifacts', platformAppId, 'public', 'data', 'bills'), 
                     (snap) => {
