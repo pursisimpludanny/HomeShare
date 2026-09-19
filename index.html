@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="ro" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>HomeShare Premium</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#090d16',
+                        cardBg: '#111827',
+                        cardBorder: '#1f2937',
+                        accentGreen: '#10b981',
+                        accentOrange: '#f59e0b',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #090d16;
+            color: #f3f4f6;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
+        
+        .modal-overlay {
+            background-color: rgba(9, 13, 22, 0.85);
+            backdrop-filter: blur(8px);
+        }
+
+        /* Input styling */
+        input, select {
+            background-color: #090d16;
+            color: #f3f4f6;
+            border-color: #1f2937;
+            color-scheme: dark;
+        }
+        input:focus, select:focus {
+            border-color: #f59e0b;
+            outline: none;
+            box-shadow: 0 0 0 1px #f59e0b;
+        }
+
+        .animate-slideUp { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .theme-blue { @apply text-blue-400 bg-blue-500/10 border-blue-500/20; }
+        .theme-amber { @apply text-amber-400 bg-amber-500/10 border-amber-500/20; }
+        .theme-purple { @apply text-purple-400 bg-purple-500/10 border-purple-500/20; }
+        .theme-teal { @apply text-teal-400 bg-teal-500/10 border-teal-500/20; }
+        .theme-slate { @apply text-slate-400 bg-slate-500/10 border-slate-500/20; }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 90%;
+            max-width: 400px;
+            pointer-events: none;
+        }
+        .toast {
+            background: #111827;
+            border: 1px solid #1f2937;
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: toastIn 0.3s forwards;
+        }
+        .toast.fade-out { animation: toastOut 0.3s forwards; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes toastOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-20px); } }
+    </style>
+</head>
+<body class="bg-darkBg min-h-screen flex flex-col justify-between pb-24 selection:bg-amber-500 selection:text-white relative">
+
+    <div id="toast-container"></div>
+
+    <!-- Header -->
+    <header class="pt-6 pb-2 px-5 sticky top-0 z-40 bg-darkBg/90 backdrop-blur-md">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-black tracking-tight text-white flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-amber-500"></i> HomeShare
+            </h1>
+            <div id="connection-status" class="w-2.5 h-2.5 rounded-full bg-slate-600 shadow-[0_0_8px_rgba(71,85,105,0.5)]"></div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main id="app-container" class="w-full max-w-md mx-auto px-4 flex-1">
+        <!-- Conținut generat dinamic -->
+    </main>
+
+    <!-- Bottom Navigation Bar (Stilul CurierTracker) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-[#0b101d]/95 backdrop-blur-xl border-t border-slate-800/80 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+        <div class="max-w-md mx-auto flex items-center justify-around">
+            <button onclick="switchTab('facturi')" id="nav-facturi" class="flex flex-col items-center justify-center transition-all duration-300 text-amber-500">
+                <div id="icon-facturi" class="w-12 h-12 flex items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-400 text-slate-950 shadow-lg shadow-amber-500/20 transform -translate-y-2 transition-all">
+                    <i class="fa-solid fa-file-invoice-dollar text-xl"></i>
+                </div>
+                <span id="text-facturi" class="text-[11px] font-semibold mt-[-4px] transition-all">Facturi</span>
+            </button>
+
+            <button onclick="switchTab('locatari')" id="nav-locatari" class="flex flex-col items-center justify-center transition-all duration-300 text-slate-400 hover:text-white">
+                <div id="icon-locatari" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800/40 transition-all duration-300">
+                    <i class="fa-solid fa-users text-lg"></i>
+                </div>
+                <span id="text-locatari" class="text-[11px] font-medium mt-1 transition-all">Locatari</span>
+            </button>
+
+            <button onclick="switchTab('setari')" id="nav-setari" class="flex flex-col items-center justify-center transition-all duration-300 text-slate-400 hover:text-white">
+                <div id="icon-setari" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800/40 transition-all duration-300">
+                    <i class="fa-solid fa-sliders text-lg"></i>
+                </div>
+                <span id="text-setari" class="text-[11px] font-medium mt-1 transition-all">Setări</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Toate modalurile HTML... (Factură, Locatar, Furnizor, Confirmare) -->
+    <!-- MODAL: FACTURĂ -->
+    <div id="modal-bill" class="fixed inset-0 modal-overlay hidden z-[60] flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div class="bg-[#111827] rounded-3xl border border-slate-800 w-full max-w-sm overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-bill-content">
+            <div class="px-5 py-4 border-b border-slate-800/60 flex items-center justify-between">
+                <h3 class="text-base font-bold text-white flex items-center gap-2" id="bill-modal-title">
+                    Factură Nouă
+                </h3>
+                <button onclick="closeModal('modal-bill')" class="text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="form-bill" class="p-5 grid gap-4" onsubmit="saveBill(event)">
+                <input type="hidden" id="bill-id">
+                <div>
+                    <label class="block text-[11px] uppercase tracking-wider font-semibold text-slate-400 mb-1.5">Furnizor Utilitate</label>
+                    <select id="bill-provider" required class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-amber-500 outline-none transition-all appearance-none">
+                        <!-- Options generated dynamically -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] uppercase tracking-wider font-semibold text-slate-400 mb-1.5">Suma Totală (€)</label>
+                    <input type="number" id="bill-amount" step="0.01" required placeholder="0.00" class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-amber-500 outline-none transition-all">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] uppercase tracking-wider font-semibold text-slate-400 mb-1.5">De La</label>
+                        <input type="date" id="bill-start" required class="w-full border rounded-xl px-3 py-2.5 text-sm focus:ring-1 focus:ring-amber-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] uppercase tracking-wider font-semibold text-slate-400 mb-1.5">Până La</label>
+                        <input type="date" id="bill-end" required class="w-full border rounded-xl px-3 py-2.5 text-sm focus:ring-1 focus:ring-amber-500 outline-none transition-all">
+                    </div>
+                </div>
+                <button type="submit" class="mt-3 w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 rounded-xl font-bold transition-all shadow-lg active:scale-[0.98]">Salvează</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: LOCATAR -->
+    <div id="modal-resident" class="fixed inset-0 modal-overlay hidden z-[60] flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div class="bg-[#111827] rounded-3xl border border-slate-800 w-full max-w-sm overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-resident-content">
+            <div class="px-5 py-4 border-b border-slate-800/60 flex items-center justify-between">
+                <h3 class="text-base font-bold text-white flex items-center gap-2" id="resident-modal-title">
+                    Adaugă Locatar
+                </h3>
+                <button onclick="closeModal('modal-resident')" class="text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="form-resident" class="p-5 grid gap-4" onsubmit="saveResident(event)">
+                <input type="hidden" id="res-id">
+                <div>
+                    <label class="block text-[11px] uppercase tracking-wider font-semibold text-slate-400 mb-1.5">Nume Complet</label>
+                    <input type="text" id="res-name" required placeholder="Ex: Dani & Andreea" class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-amber-500 outline-none transition-all">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] uppercase tracking-wider font-semibold text-slate-400 mb-1.5">Data Mutării</label>
+                        <input type="date" id="res-start" required class="w-full border rounded-xl px-3 py-2.5 text-sm focus:ring-1 focus:ring-amber-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] uppercase tracking-wider font-semibold text-slate-400 mb-1.5">Plecare (Opțional)</label>
+                        <input type="date" id="res-end" class="w-full border rounded-xl px-3 py-2.5 text-sm focus:ring-1 focus:ring-amber-500 outline-none transition-all text-slate-300">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] uppercase tracking-wider font-semibold text-slate-400 mb-1.5">Pondere (Nr. Persoane)</label>
+                    <select id="res-weight" class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-amber-500 outline-none transition-all appearance-none">
+                        <option value="1">1 (O singură persoană)</option>
+                        <option value="2">2 (Cuplu - plătesc dublu)</option>
+                        <option value="3">3</option>
+                    </select>
+                </div>
+                <button type="submit" class="mt-3 w-full py-3.5 bg-slate-800 text-white rounded-xl font-bold transition-all shadow-lg active:scale-[0.98]">Salvează</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: FURNIZOR -->
+    <div id="modal-provider" class="fixed inset-0 modal-overlay hidden z-[60] flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div class="bg-[#111827] rounded-3xl border border-slate-800 w-full max-w-sm overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-provider-content">
+            <div class="px-5 py-4 border-b border-slate-800/60 flex items-center justify-between">
+                <h3 class="text-base font-bold text-white flex items-center gap-2" id="provider-modal-title">
+                    Adaugă Furnizor
+                </h3>
+                <button onclick="closeModal('modal-provider')" class="text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="form-provider" class="p-5 grid gap-4" onsubmit="saveProvider(event)">
+                <input type="hidden" id="prov-id">
+                <div>
+                    <label class="block text-[11px] uppercase tracking-wider font-semibold text-slate-400 mb-1.5">Nume Furnizor</label>
+                    <input type="text" id="prov-name" required placeholder="Ex: De Watergroep" class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-amber-500 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-[11px] uppercase tracking-wider font-semibold text-slate-400 mb-1.5">Tip Utilitate (Iconiță)</label>
+                    <select id="prov-type" class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-amber-500 outline-none transition-all appearance-none">
+                        <option value="apa">💧 Apă</option>
+                        <option value="curent">⚡ Curent / Gaze</option>
+                        <option value="internet">🌐 Internet</option>
+                        <option value="chirie">🏠 Chirie / Administrație</option>
+                        <option value="altele">📦 Altele</option>
+                    </select>
+                </div>
+                <button type="submit" class="mt-3 w-full py-3.5 bg-slate-800 text-white rounded-xl font-bold transition-all shadow-lg active:scale-[0.98]">Salvează</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: CONFIRMARE ȘTERGERE -->
+    <div id="modal-confirm" class="fixed inset-0 modal-overlay hidden z-[70] flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div class="bg-[#111827] rounded-3xl border border-red-900/30 w-full max-w-[280px] overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-confirm-content">
+            <div class="p-6 text-center">
+                <div class="w-14 h-14 rounded-full bg-red-500/10 text-red-500 mx-auto flex items-center justify-center mb-4 border border-red-500/20">
+                    <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">Atenție!</h3>
+                <p class="text-xs text-slate-400 mb-6 leading-relaxed" id="confirm-message">Acțiunea este ireversibilă.</p>
+                <div class="flex gap-3">
+                    <button onclick="closeConfirmModal()" class="flex-1 py-2.5 text-sm bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-colors">Anulare</button>
+                    <button onclick="executeDelete()" class="flex-1 py-2.5 text-sm bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-colors">Șterge</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, deleteDoc, updateDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // *** AICI PUI CONFIGURAREA TA DE LA FIREBASE CÂND O MUȚI PE GITHUB ***
+        const platformAppId = typeof __app_id !== 'undefined' ? __app_id : 'homeshare-default';
+        const injectedConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        
+        // Când rulezi pe GitHub, înlocuiește 'injectedConfig' cu obiectul tău, ex: { apiKey: "AIza...", projectId: "homeshare-xxx", ... }
+        const firebaseConfig = injectedConfig || {}; 
+        
+        const app = Object.keys(firebaseConfig).length > 0 ? initializeApp(firebaseConfig) : null;
+        const auth = app ? getAuth(app) : null;
+        const db = app ? getFirestore(app) : null;
+
+        // State Global
+        window.state = {
+            currentTab: 'facturi',
+            residents: [],
+            bills: [],
+            providers: [],
+            deleteTarget: null
+        };
+
+        const defaultProviders = [
+            { id: '1', name: 'Apă (De Watergroep)', type: 'apa' },
+            { id: '2', name: 'Curent & Gaze (Eneco)', type: 'curent' },
+            { id: '3', name: 'Internet (Proximus)', type: 'internet' }
+        ];
+
+        // UI Helpers
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            const icon = type === 'success' ? '<i class="fa-solid fa-circle-check text-accentGreen text-lg"></i>' : '<i class="fa-solid fa-circle-exclamation text-red-400 text-lg"></i>';
+            toast.innerHTML = `${icon} <span class="text-white text-sm font-medium">${message}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+
+        function updateConnectionStatus(isConnected) {
+            const indicator = document.getElementById('connection-status');
+            indicator.className = isConnected 
+                ? "w-2.5 h-2.5 rounded-full bg-accentGreen shadow-[0_0_8px_rgba(16,185,129,0.8)]" 
+                : "w-2.5 h-2.5 rounded-full bg-slate-600 shadow-[0_0_8px_rgba(71,85,105,0.5)]";
+        }
+
+        function getProviderStyle(type) {
+            const styles = {
+                'apa': { icon: 'fa-droplet', theme: 'theme-blue' },
+                'curent': { icon: 'fa-bolt', theme: 'theme-amber' },
+                'internet': { icon: 'fa-wifi', theme: 'theme-purple' },
+                'chirie': { icon: 'fa-house', theme: 'theme-teal' },
+                'altele': { icon: 'fa-file-invoice', theme: 'theme-slate' }
+            };
+            return styles[type] || styles['altele'];
+        }
+
+        // Tab Switching & Navigation
+        window.switchTab = function(tab) {
+            window.state.currentTab = tab;
+            
+            ['facturi', 'locatari', 'setari'].forEach(t => {
+                const btn = document.getElementById(`nav-${t}`);
+                const iconContainer = document.getElementById(`icon-${t}`);
+                const text = document.getElementById(`text-${t}`);
+                
+                if (t === tab) {
+                    btn.classList.add('text-amber-500');
+                    btn.classList.remove('text-slate-400', 'hover:text-white');
+                    iconContainer.className = "w-12 h-12 flex items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-400 text-slate-950 shadow-lg shadow-amber-500/20 transform -translate-y-2 transition-all";
+                    iconContainer.innerHTML = getNavIcon(t, 'xl');
+                    text.classList.remove('mt-1', 'font-medium');
+                    text.classList.add('mt-[-4px]', 'font-semibold');
+                } else {
+                    btn.classList.remove('text-amber-500');
+                    btn.classList.add('text-slate-400', 'hover:text-white');
+                    iconContainer.className = "w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800/40 transition-all duration-300";
+                    iconContainer.innerHTML = getNavIcon(t, 'lg');
+                    text.classList.remove('mt-[-4px]', 'font-semibold');
+                    text.classList.add('mt-1', 'font-medium');
+                }
+            });
+
+            renderCurrentView();
+        };
+
+        function getNavIcon(tab, size) {
+            if(tab === 'facturi') return `<i class="fa-solid fa-file-invoice-dollar text-${size}"></i>`;
+            if(tab === 'locatari') return `<i class="fa-solid fa-users text-${size}"></i>`;
+            if(tab === 'setari') return `<i class="fa-solid fa-sliders text-${size}"></i>`;
+        }
+
+        // Logică Calcul Matematica
+        window.calculateShares = function(bill) {
+            const start = new Date(bill.startDate + 'T12:00:00Z');
+            const end = new Date(bill.endDate + 'T12:00:00Z');
+            const msPerDay = 1000 * 60 * 60 * 24;
+            let totalDays = Math.round((end - start) / msPerDay);
+            if (totalDays <= 0) totalDays = 1;
+
+            const dailyCost = bill.amount / totalDays;
+            let shares = {};
+            window.state.residents.forEach(r => shares[r.id] = 0);
+
+            for (let i = 0; i < totalDays; i++) {
+                let currentDay = new Date(start.getTime() + (i * msPerDay));
+                let activeResidents = [];
+                let totalActiveWeight = 0;
+
+                window.state.residents.forEach(res => {
+                    let resStart = new Date(res.startDate + 'T12:00:00Z');
+                    let resEnd = res.endDate ? new Date(res.endDate + 'T12:00:00Z') : new Date('2099-12-31');
+                    if (currentDay >= resStart && currentDay < resEnd) {
+                        activeResidents.push(res);
+                        totalActiveWeight += parseInt(res.weight);
+                    }
+                });
+
+                if (totalActiveWeight > 0) {
+                    const costPerWeight = dailyCost / totalActiveWeight;
+                    activeResidents.forEach(res => {
+                        shares[res.id] += costPerWeight * parseInt(res.weight);
+                    });
+                }
+            }
+            return shares;
+        };
+
+        // Views Rendering
+        window.renderCurrentView = function() {
+            const container = document.getElementById('app-container');
+            
+            if (window.state.currentTab === 'facturi') {
+                container.innerHTML = `
+                    <div class="animate-slideUp space-y-4">
+                        <div class="flex items-center justify-between mt-2 mb-4">
+                            <h2 class="text-lg font-extrabold tracking-tight">Panou Facturi</h2>
+                            <button onclick="openBillModal()" class="w-10 h-10 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20 active:scale-95 transition-transform">
+                                <i class="fa-solid fa-plus text-lg"></i>
+                            </button>
+                        </div>
+                        <div id="bills-list" class="space-y-4 pb-4"></div>
+                    </div>
+                `;
+                renderBillsList();
+            } else if (window.state.currentTab === 'locatari') {
+                container.innerHTML = `
+                    <div class="animate-slideUp space-y-4">
+                        <div class="flex items-center justify-between mt-2 mb-4">
+                            <h2 class="text-lg font-extrabold tracking-tight">Gestiune Locatari</h2>
+                            <button onclick="openResidentModal()" class="w-10 h-10 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center border border-slate-700 active:scale-95 transition-transform">
+                                <i class="fa-solid fa-user-plus text-sm"></i>
+                            </button>
+                        </div>
+                        <div id="residents-list" class="space-y-3 pb-4"></div>
+                    </div>
+                `;
+                renderResidentsList();
+            } else {
+                container.innerHTML = `
+                    <div class="animate-slideUp space-y-5 pb-6">
+                        <div class="flex items-center justify-between mt-2 mb-4">
+                            <h2 class="text-lg font-extrabold tracking-tight">Setări & Furnizori</h2>
+                            <button onclick="openProviderModal()" class="w-10 h-10 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center border border-slate-700 active:scale-95 transition-transform">
+                                <i class="fa-solid fa-plus text-sm"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="bg-[#111827]/90 border border-slate-800/80 rounded-3xl p-4 shadow-xl">
+                            <h3 class="text-xs uppercase tracking-wider font-semibold text-slate-500 mb-3">Lista Furnizori Utilități</h3>
+                            <div id="providers-list" class="space-y-2"></div>
+                        </div>
+
+                        <div class="bg-[#111827]/90 border border-slate-800/80 rounded-3xl p-4 shadow-xl mt-4 text-center">
+                            <div class="w-12 h-12 mx-auto rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-xl mb-3">
+                                <i class="fa-solid fa-database"></i>
+                            </div>
+                            <h3 class="text-sm font-bold text-white mb-1">Copie de Siguranță</h3>
+                            <p class="text-xs text-slate-400 mb-4">Salvează sau importă baza de date curentă.</p>
+                            <div class="flex flex-col gap-2">
+                                <button onclick="exportData()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all">
+                                    <i class="fa-solid fa-download"></i> Descarcă Backup
+                                </button>
+                                <label class="w-full py-2.5 bg-slate-800/50 hover:bg-slate-800 text-slate-300 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer">
+                                    <i class="fa-solid fa-upload"></i> Importă Date
+                                    <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(event)">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                renderProvidersList();
+            }
+        };
+
+        function renderBillsList() {
+            const container = document.getElementById('bills-list');
+            if(!container) return;
+            container.innerHTML = '';
+
+            if (window.state.bills.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 px-4 rounded-3xl border border-dashed border-slate-700 bg-slate-800/20">
+                        <i class="fa-solid fa-file-invoice text-3xl text-slate-600 mb-3"></i>
+                        <p class="text-slate-400 text-sm">Nicio factură adăugată.</p>
+                    </div>`;
+                return;
+            }
+
+            window.state.bills.sort((a, b) => new Date(b.endDate) - new Date(a.endDate)).forEach(bill => {
+                const provider = window.state.providers.find(p => p.id === bill.providerId) || { name: 'Necunoscut', type: 'altele' };
+                const style = getProviderStyle(provider.type);
+                const shares = window.calculateShares(bill);
+                let paymentsHTML = '';
+                
+                window.state.residents.forEach(res => {
+                    const amount = shares[res.id];
+                    if (amount > 0.01) {
+                        const isPaid = bill.payments[res.id] || false;
+                        const btnClass = isPaid 
+                            ? 'bg-accentGreen/10 text-accentGreen border-accentGreen/30' 
+                            : 'bg-slate-800/80 text-slate-400 border-slate-700/80';
+                        const icon = isPaid ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-xmark text-[10px]"></i>';
+                        
+                        paymentsHTML += `
+                            <div class="flex items-center justify-between py-2 border-b border-slate-700/40 last:border-0">
+                                <span class="text-sm text-slate-300 font-medium">${res.name}</span>
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-white">${amount.toFixed(2)} €</span>
+                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="w-8 h-8 rounded-lg border flex items-center justify-center transition-all ${btnClass} active:scale-95 shadow-sm">
+                                        ${icon}
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+
+                const dStart = new Date(bill.startDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
+                const dEnd = new Date(bill.endDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
+
+                const card = document.createElement('div');
+                card.className = "bg-[#111827]/90 border border-slate-800/80 rounded-3xl overflow-hidden shadow-xl hover:border-slate-700 transition-all";
+                card.innerHTML = `
+                    <div class="p-4 border-b border-slate-800/60 flex justify-between items-center bg-slate-900/30">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl ${style.theme} border flex items-center justify-center">
+                                <i class="fa-solid ${style.icon} text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-white text-sm truncate max-w-[140px]">${provider.name}</h3>
+                                <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5">${dStart} — ${dEnd}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-xl font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
+                            <div class="flex gap-2 justify-end mt-1">
+                                <button onclick="window.editBill('${bill.id}')" class="text-slate-500 hover:text-white transition-colors"><i class="fa-solid fa-pen-to-square text-xs"></i></button>
+                                <button onclick="window.confirmDeleteAction('bill', '${bill.id}')" class="text-slate-500 hover:text-red-400 transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4">${paymentsHTML || '<p class="text-xs text-slate-500 text-center">Fără locatari activi.</p>'}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderResidentsList() {
+            const container = document.getElementById('residents-list');
+            if(!container) return;
+            container.innerHTML = '';
+
+            window.state.residents.sort((a, b) => new Date(a.startDate) - new Date(b.startDate)).forEach(res => {
+                const isGone = res.endDate && new Date(res.endDate) < new Date();
+                const opacity = isGone ? 'opacity-50' : '';
+                const icon = res.weight > 1 ? '<i class="fa-solid fa-user-group text-amber-500"></i>' : '<i class="fa-solid fa-user text-slate-400"></i>';
+                
+                const card = document.createElement('div');
+                card.className = `bg-[#111827]/90 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between shadow-lg ${opacity}`;
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-sm shadow-inner">
+                            ${icon}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-sm ${isGone ? 'line-through text-slate-400' : ''}">${res.name}</h3>
+                            <p class="text-[10px] text-slate-400 uppercase font-semibold mt-0.5">Pondere: ${res.weight}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="window.editResident('${res.id}')" class="text-slate-500 hover:text-white"><i class="fa-solid fa-pen text-sm"></i></button>
+                        <button onclick="window.confirmDeleteAction('resident', '${res.id}')" class="text-slate-500 hover:text-red-400"><i class="fa-solid fa-trash text-sm"></i></button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderProvidersList() {
+            const container = document.getElementById('providers-list');
+            if(!container) return;
+            container.innerHTML = '';
+
+            window.state.providers.forEach(prov => {
+                const style = getProviderStyle(prov.type);
+                const card = document.createElement('div');
+                card.className = `bg-slate-800/40 border border-slate-700/50 rounded-xl p-3 flex items-center justify-between`;
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg ${style.theme} border flex items-center justify-center text-xs">
+                            <i class="fa-solid ${style.icon}"></i>
+                        </div>
+                        <span class="font-bold text-white text-sm">${prov.name}</span>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="window.editProvider('${prov.id}')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-pen text-xs"></i></button>
+                        <button onclick="window.confirmDeleteAction('provider', '${prov.id}')" class="text-slate-400 hover:text-red-400"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- BAZA DE DATE & MODALURI ---
+        window.openBillModal = () => {
+            if(state.providers.length === 0) return showToast('Adaugă întâi un furnizor din Setări!', 'error');
+            const select = document.getElementById('bill-provider');
+            select.innerHTML = state.providers.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            
+            document.getElementById('form-bill').reset();
+            document.getElementById('bill-id').value = '';
+            document.getElementById('bill-modal-title').innerText = 'Factură Nouă';
+            showModal('modal-bill');
+        };
+        window.editBill = (id) => {
+            const b = state.bills.find(x => x.id === id);
+            if(!b) return;
+            
+            const select = document.getElementById('bill-provider');
+            select.innerHTML = state.providers.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            
+            document.getElementById('bill-id').value = b.id;
+            document.getElementById('bill-provider').value = b.providerId || '';
+            document.getElementById('bill-amount').value = b.amount;
+            document.getElementById('bill-start').value = b.startDate;
+            document.getElementById('bill-end').value = b.endDate;
+            document.getElementById('bill-modal-title').innerText = 'Editează Factura';
+            showModal('modal-bill');
+        };
+
+        window.openResidentModal = () => {
+            document.getElementById('form-resident').reset();
+            document.getElementById('res-id').value = '';
+            document.getElementById('resident-modal-title').innerText = 'Adaugă Locatar';
+            showModal('modal-resident');
+        };
+        window.editResident = (id) => {
+            const r = state.residents.find(x => x.id === id);
+            if(!r) return;
+            document.getElementById('res-id').value = r.id;
+            document.getElementById('res-name').value = r.name;
+            document.getElementById('res-start').value = r.startDate;
+            document.getElementById('res-end').value = r.endDate || '';
+            document.getElementById('res-weight').value = r.weight;
+            document.getElementById('resident-modal-title').innerText = 'Editează Locatar';
+            showModal('modal-resident');
+        };
+
+        window.openProviderModal = () => {
+            document.getElementById('form-provider').reset();
+            document.getElementById('prov-id').value = '';
+            document.getElementById('provider-modal-title').innerText = 'Adaugă Furnizor';
+            showModal('modal-provider');
+        };
+        window.editProvider = (id) => {
+            const p = state.providers.find(x => x.id === id);
+            if(!p) return;
+            document.getElementById('prov-id').value = p.id;
+            document.getElementById('prov-name').value = p.name;
+            document.getElementById('prov-type').value = p.type;
+            document.getElementById('provider-modal-title').innerText = 'Editează Furnizor';
+            showModal('modal-provider');
+        }
+
+        // --- SALVARE FIREBASE ---
+        window.saveBill = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('bill-id').value;
+            const data = {
+                providerId: document.getElementById('bill-provider').value,
+                amount: parseFloat(document.getElementById('bill-amount').value),
+                startDate: document.getElementById('bill-start').value,
+                endDate: document.getElementById('bill-end').value
+            };
+            if(db && auth.currentUser) {
+                try {
+                    if(id) {
+                        await updateDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'bills', id), data);
+                    } else {
+                        const newId = Date.now().toString();
+                        data.id = newId; data.payments = {};
+                        await setDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'bills', newId), data);
+                    }
+                    closeModal('modal-bill'); showToast('Factură salvată!');
+                } catch(err) { console.error(err); }
+            }
+        };
+
+        window.saveResident = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('res-id').value;
+            const data = {
+                name: document.getElementById('res-name').value,
+                startDate: document.getElementById('res-start').value,
+                endDate: document.getElementById('res-end').value,
+                weight: parseInt(document.getElementById('res-weight').value)
+            };
+            if(db && auth.currentUser) {
+                try {
+                    if(id) await updateDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'residents', id), data);
+                    else {
+                        const newId = Date.now().toString(); data.id = newId;
+                        await setDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'residents', newId), data);
+                    }
+                    closeModal('modal-resident'); showToast('Locatar salvat!');
+                } catch(err) { console.error(err); }
+            }
+        };
+
+        window.saveProvider = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('prov-id').value;
+            const data = {
+                name: document.getElementById('prov-name').value,
+                type: document.getElementById('prov-type').value
+            };
+            if(db && auth.currentUser) {
+                try {
+                    if(id) await updateDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'providers', id), data);
+                    else {
+                        const newId = Date.now().toString(); data.id = newId;
+                        await setDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'providers', newId), data);
+                    }
+                    closeModal('modal-provider'); showToast('Furnizor salvat!');
+                } catch(err) { console.error(err); }
+            }
+        }
+
+        window.togglePayment = async (billId, resId) => {
+            const bill = state.bills.find(b => b.id === billId);
+            if(bill && db && auth.currentUser) {
+                const isPaid = bill.payments[resId] || false;
+                const newPayments = { ...bill.payments };
+                newPayments[resId] = !isPaid;
+                
+                // Optimistic UI Update (Se simte rapid la deget)
+                bill.payments = newPayments; renderBillsList();
+                
+                try {
+                    await updateDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'bills', billId), { payments: newPayments });
+                } catch(err) { console.error(err); }
+            }
+        };
+
+        window.confirmDeleteAction = (type, id) => {
+            state.deleteTarget = { type, id };
+            showModal('modal-confirm');
+        };
+
+        window.executeDelete = async () => {
+            if(!db || !auth.currentUser || !state.deleteTarget) return;
+            const { type, id } = state.deleteTarget;
+            const col = type === 'bill' ? 'bills' : type === 'resident' ? 'residents' : 'providers';
+            try {
+                await deleteDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', col, id));
+                showToast('Ștergere reușită.');
+                closeConfirmModal();
+            } catch(err) { console.error(err); }
+        };
+
+        // Utilities Modale
+        function showModal(id) {
+            const m = document.getElementById(id);
+            const c = document.getElementById(`${id}-content`);
+            m.classList.remove('hidden');
+            setTimeout(() => { m.classList.remove('opacity-0'); c.classList.remove('scale-95'); }, 10);
+        }
+        window.closeModal = (id) => {
+            const m = document.getElementById(id);
+            const c = document.getElementById(`${id}-content`);
+            m.classList.add('opacity-0'); c.classList.add('scale-95');
+            setTimeout(() => m.classList.add('hidden'), 300);
+        };
+        window.closeConfirmModal = () => { state.deleteTarget = null; closeModal('modal-confirm'); };
+
+        // Export/Import
+        window.exportData = () => {
+            const data = { residents: state.residents, bills: state.bills, providers: state.providers };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `homeshare_backup.json`;
+            a.click(); URL.revokeObjectURL(url);
+            showToast('Backup descărcat!');
+        };
+        window.importData = (e) => {
+            if(!db || !auth.currentUser) return;
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if(data.providers) for(let p of data.providers) await setDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'providers', p.id), p);
+                    if(data.residents) for(let r of data.residents) await setDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'residents', r.id), r);
+                    if(data.bills) for(let b of data.bills) await setDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'bills', b.id), b);
+                    showToast('Date importate!');
+                } catch(err) { console.error(err); }
+            };
+            reader.readAsText(file);
+        };
+
+        // --- FIREBASE INIT ---
+        async function initApp() {
+            if (!app) { console.warn("Fără Firebase config."); return; }
+            try {
+                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (token) await signInWithCustomToken(auth, token);
+                else await signInAnonymously(auth);
+                
+                if (!auth.currentUser) throw new Error("Auth failed");
+                updateConnectionStatus(true);
+
+                // Setup Listeners
+                onSnapshot(collection(db, 'artifacts', platformAppId, 'public', 'data', 'providers'), 
+                    (snap) => {
+                        if(snap.empty) {
+                            defaultProviders.forEach(p => setDoc(doc(db, 'artifacts', platformAppId, 'public', 'data', 'providers', p.id), p));
+                        } else {
+                            state.providers = [];
+                            snap.forEach(d => state.providers.push({id: d.id, ...d.data()}));
+                            if(state.currentTab === 'setari') renderCurrentView();
+                        }
+                    }, (err) => console.error(err)
+                );
+
+                onSnapshot(collection(db, 'artifacts', platformAppId, 'public', 'data', 'residents'), 
+                    (snap) => {
+                        state.residents = [];
+                        snap.forEach(d => state.residents.push({id: d.id, ...d.data()}));
+                        if(state.currentTab === 'locatari' || state.currentTab === 'facturi') renderCurrentView();
+                    }, (err) => console.error(err)
+                );
+
+                onSnapshot(collection(db, 'artifacts', platformAppId, 'public', 'data', 'bills'), 
+                    (snap) => {
+                        state.bills = [];
+                        snap.forEach(d => state.bills.push({id: d.id, ...d.data()}));
+                        if(state.currentTab === 'facturi') renderCurrentView();
+                    }, (err) => console.error(err)
+                );
+
+            } catch (e) {
+                console.error("Init Error:", e);
+                updateConnectionStatus(false);
+            }
+        }
+
+        window.onload = () => {
+            switchTab('facturi');
+            initApp();
+        };
+
+    </script>
+</body>
+</html>
