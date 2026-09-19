@@ -15,19 +15,26 @@
     <link rel="icon" type="image/png" href="https://img.icons8.com/?size=192&id=wFfu6zXx15Yk&format=png&color=000000">
     <link rel="apple-touch-icon" href="https://img.icons8.com/?size=192&id=wFfu6zXx15Yk&format=png&color=000000">
 
-    <!-- PWA Manifest Inline with Stable PNG Icon -->
+    <!-- PWA Manifest & Service Worker Setup -->
     <script>
         const manifestData = {
             "name": "HomeShare App",
             "short_name": "HomeShare",
             "start_url": "./",
+            "scope": "./",
             "display": "standalone",
             "background_color": "#090d16",
             "theme_color": "#090d16",
             "icons": [
                 {
                     "src": "https://img.icons8.com/?size=192&id=wFfu6zXx15Yk&format=png&color=000000",
-                    "sizes": "192x192 512x512",
+                    "sizes": "192x192",
+                    "type": "image/png",
+                    "purpose": "any maskable"
+                },
+                {
+                    "src": "https://img.icons8.com/?size=512&id=wFfu6zXx15Yk&format=png&color=000000",
+                    "sizes": "512x512",
                     "type": "image/png",
                     "purpose": "any maskable"
                 }
@@ -41,7 +48,11 @@
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                const swCode = `self.addEventListener('fetch', function(event) { event.respondWith(fetch(event.request)); });`;
+                const swCode = `
+                    self.addEventListener('install', (e) => { self.skipWaiting(); });
+                    self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
+                    self.addEventListener('fetch', (e) => { e.respondWith(fetch(e.request).catch(() => caches.match(e.request))); });
+                `;
                 const swBlob = new Blob([swCode], { type: 'text/javascript' });
                 navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(err => console.log('SW failed', err));
             });
@@ -106,11 +117,27 @@
 
     <div id="toast-container"></div>
 
+    <!-- PWA Install Banner -->
+    <div id="install-banner" class="hidden fixed bottom-20 left-4 right-4 z-50 bg-[#121824] border border-amber-500/40 p-4 rounded-2xl shadow-2xl flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-500 text-lg">
+                <i class="fa-solid fa-house-chimney"></i>
+            </div>
+            <div>
+                <h4 class="text-xs font-bold text-white">Instalează HomeShare</h4>
+                <p class="text-[11px] text-slate-400">Adaugă aplicația pe ecranul principal</p>
+            </div>
+        </div>
+        <button id="install-btn" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg active:scale-95 transition-all">
+            Instalează
+        </button>
+    </div>
+
     <header class="pt-5 pb-3 px-5 sticky top-0 z-40 bg-darkBg/90 backdrop-blur-md border-b border-slate-800/40">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <h1 class="text-xl font-black tracking-tight text-white flex items-center gap-2.5">
                 <div class="w-9 h-9 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-md overflow-hidden p-1.5">
-                    <img src="https://img.icons8.com/?size=100&id=wFfu6zXx15Yk&format=png&color=000000" class="w-full h-full object-contain" alt="Home">
+                    <img src="https://img.icons8.com/?size=192&id=wFfu6zXx15Yk&format=png&color=000000" class="w-full h-full object-contain" alt="Home">
                 </div>
                 HomeShare
             </h1>
@@ -274,6 +301,7 @@
         </div>
     </div>
 
+    <!-- SCRIPT FIREBASE ȘI LOGICĂ APLICAȚIE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -301,6 +329,25 @@
             providers: [],
             deleteTarget: null
         };
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const banner = document.getElementById('install-banner');
+            if(banner) banner.classList.remove('hidden');
+        });
+
+        document.getElementById('install-btn')?.addEventListener('click', async () => {
+            if(deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if(outcome === 'accepted') {
+                    document.getElementById('install-banner').classList.add('hidden');
+                }
+                deferredPrompt = null;
+            }
+        });
 
         const defaultResidents = [
             { id: "1", name: "Dani & Andreea", startDate: "2026-02-01", endDate: "", weight: 2 },
@@ -521,17 +568,18 @@
                     if (amount > 0.01) {
                         const isPaid = bill.payments[res.id] || false;
                         const btnClass = isPaid 
-                            ? 'bg-emerald-950/80 text-emerald-400 border-emerald-500/50' 
-                            : 'bg-rose-950/80 text-rose-400 border-rose-500/50';
+                            ? 'bg-emerald-950/80 text-emerald-400 border-emerald-500/50 hover:bg-emerald-900' 
+                            : 'bg-rose-950/80 text-rose-400 border-rose-500/50 hover:bg-rose-900';
                         const icon = isPaid ? '<i class="fa-solid fa-check text-xs font-black"></i>' : '<i class="fa-solid fa-xmark text-xs font-black"></i>';
+                        const labelText = isPaid ? 'Plătit' : 'Neplătit';
                         
                         paymentsHTML += `
                             <div class="flex items-center justify-between py-2 px-3.5 bg-[#0d121c] rounded-2xl border border-slate-800/70 mb-2">
                                 <span class="text-xs text-slate-200 font-bold">${res.name}</span>
                                 <div class="flex items-center gap-3">
-                                    <span class="font-black text-white text-xs">${amount.toFixed(2)} €</span>
-                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="w-11 h-7 rounded-xl border flex items-center justify-center transition-all ${btnClass} active:scale-95 shadow-sm">
-                                        ${icon}
+                                    <span class="font-black text-white text-sm">${amount.toFixed(2)} €</span>
+                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="px-3 py-1.5 rounded-xl border flex items-center gap-2 transition-all ${btnClass} active:scale-95 shadow-sm text-xs font-bold min-w-[85px] justify-center">
+                                        ${icon} <span>${labelText}</span>
                                     </button>
                                 </div>
                             </div>
@@ -564,7 +612,7 @@
                     }
 
                     dueDateHTML = `
-                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-bold ${badgeClass} mt-1">
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-bold ${badgeClass}">
                             <i class="fa-solid ${iconBadge}"></i> ${labelStatus}
                         </div>
                     `;
@@ -583,11 +631,11 @@
                             <div>
                                 <h3 class="font-black text-white text-sm tracking-tight">${bill.type}</h3>
                                 <p class="text-[11px] text-slate-400 font-semibold">${dStart} — ${dEnd}</p>
-                                <div>${dueDateHTML}</div>
                             </div>
                         </div>
                         <div class="text-right">
-                            <span class="text-xl font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
+                            <span class="text-2xl font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
+                            <div class="mt-1">${dueDateHTML}</div>
                         </div>
                     </div>
 
@@ -642,14 +690,15 @@
                     const badgeBorder = isPaid ? 'rgba(16, 185, 129, 0.6)' : 'rgba(244, 63, 94, 0.6)';
                     const badgeColor = isPaid ? '#34d399' : '#fb7185';
                     const symbol = isPaid ? '✓' : '✕';
+                    const labelText = isPaid ? 'Plătit' : 'Neplătit';
 
                     paymentsExportHTML += `
                         <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background-color: #0d121c; border: 1px solid rgba(30, 41, 59, 0.8); border-radius: 16px; margin-bottom: 8px;">
                             <span style="font-size: 13px; color: #f3f4f6; font-weight: 700;">${res.name}</span>
                             <div style="display: flex; align-items: center; gap: 14px;">
                                 <span style="font-size: 14px; color: #ffffff; font-weight: 900;">${amount.toFixed(2)} €</span>
-                                <div style="width: 36px; height: 28px; border-radius: 10px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900;">
-                                    ${symbol}
+                                <div style="padding: 4px 12px; border-radius: 10px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 900;">
+                                    <span>${symbol}</span> <span>${labelText}</span>
                                 </div>
                             </div>
                         </div>
@@ -682,7 +731,7 @@
                 }
 
                 dueBadgeExportHTML = `
-                    <div style="margin-top: 5px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 8px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; font-size: 10px; font-weight: 800;">
+                    <div style="margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 8px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; font-size: 10px; font-weight: 800;">
                         ${labelStatus}
                     </div>
                 `;
@@ -697,11 +746,11 @@
                         <div>
                             <div style="font-weight: 900; color: #ffffff; font-size: 14px;">${bill.type}</div>
                             <div style="font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 2px;">${dStart} — ${dEnd}</div>
-                            <div>${dueBadgeExportHTML}</div>
                         </div>
                     </div>
                     <div style="text-align: right;">
                         <span style="font-size: 20px; font-weight: 900; color: #ffffff;">${bill.amount.toFixed(2)} €</span>
+                        <div>${dueBadgeExportHTML}</div>
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 4px;">
