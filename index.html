@@ -503,14 +503,14 @@
                         const btnClass = isPaid 
                             ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
                             : 'bg-red-500/10 text-red-400 border-red-500/30';
-                        const icon = isPaid ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-xmark"></i>';
+                        const icon = isPaid ? '<i class="fa-solid fa-check text-xs"></i>' : '<i class="fa-solid fa-xmark text-xs"></i>';
                         
                         paymentsHTML += `
-                            <div class="flex items-center justify-between py-2 border-b border-slate-700/40 last:border-0">
-                                <span class="text-sm text-slate-300 font-medium">${res.name}</span>
-                                <div class="flex items-center gap-3">
-                                    <span class="font-bold text-white">${amount.toFixed(2)} €</span>
-                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="w-9 h-9 rounded-xl border flex items-center justify-center transition-all ${btnClass} active:scale-95 shadow-sm" title="${isPaid ? 'Plătit' : 'Neplătit'}">
+                            <div class="flex items-center justify-between py-1.5 px-3 bg-slate-900/40 rounded-xl border border-slate-800/50">
+                                <span class="text-xs text-slate-300 font-medium truncate max-w-[140px]">${res.name}</span>
+                                <div class="flex items-center gap-2.5">
+                                    <span class="font-bold text-white text-xs">${amount.toFixed(2)} €</span>
+                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="w-7 h-7 rounded-lg border flex items-center justify-center transition-all ${btnClass} active:scale-95 shadow-sm" title="${isPaid ? 'Plătit' : 'Neplătit'}">
                                         ${icon}
                                     </button>
                                 </div>
@@ -522,23 +522,22 @@
                 const dStart = new Date(bill.startDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
                 const dEnd = new Date(bill.endDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
                 
-                // Calcul stitizare Data Scadentă (Verde / Portocaliu / Roșu)
+                // Smart Due Date Badge (Green / Orange / Red)
                 let dueDateHTML = '';
                 if(bill.dueDate) {
                     const today = new Date();
                     today.setHours(0,0,0,0);
                     const due = new Date(bill.dueDate + 'T00:00:00');
-                    const diffTime = due - today;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
 
-                    let badgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                    let badgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
                     let iconBadge = 'fa-circle-check';
-                    let labelStatus = `Scadent: ${new Date(bill.dueDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short', year:'numeric'})}`;
+                    let labelStatus = `Scadent: ${new Date(bill.dueDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'})}`;
 
                     if(diffDays < 0) {
-                        badgeClass = 'bg-red-500/15 text-red-400 border-red-500/30 animate-pulse';
+                        badgeClass = 'bg-red-500/15 text-red-400 border-red-500/30';
                         iconBadge = 'fa-triangle-exclamation';
-                        labelStatus = `Depășit de ${Math.abs(diffDays)} zile!`;
+                        labelStatus = `Depășit (${Math.abs(diffDays)}z)`;
                     } else if(diffDays <= 3) {
                         badgeClass = 'bg-amber-500/15 text-amber-400 border-amber-500/30';
                         iconBadge = 'fa-clock';
@@ -546,7 +545,7 @@
                     }
 
                     dueDateHTML = `
-                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-semibold mt-1.5 ${badgeClass}">
+                        <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] font-semibold ${badgeClass}">
                             <i class="fa-solid ${iconBadge}"></i> ${labelStatus}
                         </div>
                     `;
@@ -554,38 +553,37 @@
 
                 const card = document.createElement('div');
                 card.id = `bill-card-${bill.id}`;
-                card.className = "bg-[#111827] border border-slate-800 rounded-3xl overflow-hidden shadow-2xl transition-all relative";
+                card.className = "bg-[#111827] border border-slate-800/90 rounded-2xl overflow-hidden shadow-xl transition-all relative p-3.5 space-y-2.5";
                 card.innerHTML = `
-                    <div class="p-4 border-b border-slate-800/80 bg-slate-900/60">
-                        <div class="flex justify-between items-start gap-2">
-                            <div class="flex items-center gap-3 overflow-hidden">
-                                <div class="w-10 h-10 rounded-xl ${style.theme} border flex items-center justify-center shrink-0">
-                                    <i class="fa-solid ${style.icon} text-lg"></i>
-                                </div>
-                                <div class="overflow-hidden">
-                                    <h3 class="font-bold text-white text-sm truncate">${bill.type}</h3>
-                                    <p class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5">${dStart} — ${dEnd}</p>
-                                </div>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2.5 overflow-hidden">
+                            <div class="w-9 h-9 rounded-xl ${style.theme} border flex items-center justify-center shrink-0">
+                                <i class="fa-solid ${style.icon} text-sm"></i>
                             </div>
-                            <div class="text-right shrink-0">
-                                <span class="block text-xl font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
+                            <div class="overflow-hidden leading-tight">
+                                <h3 class="font-bold text-white text-xs truncate max-w-[130px]">${bill.type}</h3>
+                                <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5">${dStart} — ${dEnd}</p>
                             </div>
                         </div>
-                        ${dueDateHTML}
-                        <!-- Butoane mari optimizate pentru telefon -->
-                        <div class="flex items-center justify-end gap-2 mt-3 pt-2.5 border-t border-slate-800/60">
-                            <button onclick="window.shareCard('${bill.id}')" class="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all">
-                                <i class="fa-brands fa-whatsapp text-sm"></i> Distribuie
-                            </button>
-                            <button onclick="window.editBill('${bill.id}')" class="p-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-xl text-xs flex items-center justify-center transition-all" title="Editează">
-                                <i class="fa-solid fa-pen text-xs"></i>
-                            </button>
-                            <button onclick="window.confirmDeleteAction('bill', '${bill.id}')" class="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs flex items-center justify-center transition-all" title="Șterge">
-                                <i class="fa-solid fa-trash text-xs"></i>
-                            </button>
+                        <div class="flex items-center gap-2">
+                            <div class="text-right">
+                                <span class="block text-base font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
+                            </div>
+                            <div class="flex items-center gap-1 bg-slate-900/80 border border-slate-800 p-1 rounded-xl">
+                                <button onclick="window.shareCard('${bill.id}')" class="w-7 h-7 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg flex items-center justify-center text-xs transition-all" title="Distribuie WhatsApp">
+                                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                                </button>
+                                <button onclick="window.editBill('${bill.id}')" class="w-7 h-7 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-lg flex items-center justify-center text-xs transition-all" title="Editează">
+                                    <i class="fa-solid fa-pen text-[10px]"></i>
+                                </button>
+                                <button onclick="window.confirmDeleteAction('bill', '${bill.id}')" class="w-7 h-7 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg flex items-center justify-center text-xs transition-all" title="Șterge">
+                                    <i class="fa-solid fa-trash text-[10px]"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <div class="p-4">${paymentsHTML || '<p class="text-xs text-slate-500 text-center">Fără locatari activi.</p>'}</div>
+                    ${dueDateHTML ? `<div>${dueDateHTML}</div>` : ''}
+                    <div class="grid grid-cols-1 gap-1.5 pt-1 border-t border-slate-800/60">${paymentsHTML || '<p class="text-[11px] text-slate-500 text-center">Fără locatari activi.</p>'}</div>
                 `;
                 container.appendChild(card);
             });
@@ -595,96 +593,39 @@
             const originalCard = document.getElementById(`bill-card-${billId}`);
             if(!originalCard) return;
 
-            showToast('Se generează imaginea curată pentru WhatsApp...', 'success');
+            showToast('Se generează imaginea exactă pentru WhatsApp...', 'success');
 
-            // Cream un container dedicat, optimizat ca imaginea să nu iasă niciodată distorsionată
-            const exportContainer = document.createElement('div');
-            exportContainer.style.position = 'fixed';
-            exportContainer.style.top = '-9999px';
-            exportContainer.style.left = '0';
-            exportContainer.style.width = '420px';
-            exportContainer.style.backgroundColor = '#090d16';
-            exportContainer.style.color = '#f3f4f6';
-            exportContainer.style.padding = '24px';
-            exportContainer.style.borderRadius = '24px';
-            exportContainer.style.border = '1px solid #1f2937';
-            exportContainer.style.fontFamily = 'Inter, sans-serif';
+            // Clone exact card element to guarantee identical UI snapshot
+            const clone = originalCard.cloneNode(true);
+            clone.style.position = 'fixed';
+            clone.style.top = '-9999px';
+            clone.style.left = '0';
+            clone.style.width = '380px';
+            clone.style.zIndex = '99999';
 
-            // Copiem doar conținutul util (fără butoanele de acțiune)
-            const bill = state.bills.find(b => b.id === billId);
-            const style = getProviderStyle(bill.type);
-            const shares = window.calculateShares(bill);
-            
-            let paymentsListHTML = '';
-            window.state.residents.forEach(res => {
-                const amount = shares[res.id];
-                if (amount > 0.01) {
-                    const isPaid = bill.payments[res.id] || false;
-                    const badgeText = isPaid ? 'Plătit ✓' : 'Neplătit ✕';
-                    const badgeColor = isPaid ? '#10b981' : '#ef4444';
-                    const badgeBg = isPaid ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+            // Remove action buttons from the exported image clone for cleanliness
+            const actionContainer = clone.querySelector('.flex.items-center.gap-1.bg-slate-900\\/80');
+            if(actionContainer) actionContainer.remove();
 
-                    paymentsListHTML += `
-                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #1f2937;">
-                            <span style="font-size: 14px; font-weight: 500; color: #cbd5e1;">${res.name}</span>
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span style="font-size: 15px; font-weight: 700; color: #ffffff;">${amount.toFixed(2)} €</span>
-                                <span style="font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 8px; background-color: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeColor};">
-                                    ${badgeText}
-                                </span>
-                            </div>
-                        </div>
-                    `;
-                }
-            });
-
-            const dStart = new Date(bill.startDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
-            const dEnd = new Date(bill.endDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
-            const dDue = bill.dueDate ? new Date(bill.dueDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short', year:'numeric'}) : '-';
-
-            exportContainer.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #1f2937;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); display: flex; align-items: center; justify-content: center; color: #f59e0b; font-size: 18px;">
-                            🏠
-                        </div>
-                        <div>
-                            <h3 style="font-size: 16px; font-weight: 800; color: #ffffff; margin: 0;">${bill.type}</h3>
-                            <p style="font-size: 11px; color: #94a3b8; text-transform: uppercase; margin: 2px 0 0 0;">${dStart} — ${dEnd}</p>
-                            <p style="font-size: 11px; color: #fbbf24; margin: 2px 0 0 0;">Scadentă: ${dDue}</p>
-                        </div>
-                    </div>
-                    <div style="text-align: right;">
-                        <span style="font-size: 22px; font-weight: 900; color: #ffffff;">${bill.amount.toFixed(2)} €</span>
-                    </div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    ${paymentsListHTML}
-                </div>
-                <div style="text-align: center; margin-top: 16px; font-size: 10px; color: #64748b; font-weight: 500;">
-                    Generat din HomeShare App
-                </div>
-            `;
-
-            document.body.appendChild(exportContainer);
+            document.body.appendChild(clone);
 
             try {
-                const canvas = await html2canvas(exportContainer, {
-                    backgroundColor: '#090d16',
+                const canvas = await html2canvas(clone, {
+                    backgroundColor: '#111827',
                     scale: 3,
                     logging: false
                 });
                 
-                document.body.removeChild(exportContainer);
+                document.body.removeChild(clone);
 
                 canvas.toBlob(async (blob) => {
-                    const file = new File([blob], `factura_${bill.type}.png`, { type: 'image/png' });
+                    const file = new File([blob], `factura.png`, { type: 'image/png' });
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
                             await navigator.share({
                                 files: [file],
                                 title: 'Factură HomeShare',
-                                text: `Salut! Iată repartizarea pentru factura de ${bill.type} (${bill.amount.toFixed(2)} €).`
+                                text: `Salut! Iată repartizarea facturii.`
                             });
                             return;
                         } catch (err) {
@@ -693,13 +634,13 @@
                     }
                     
                     const link = document.createElement('a');
-                    link.download = `factura_${bill.type}.png`;
+                    link.download = `factura.png`;
                     link.href = canvas.toDataURL();
                     link.click();
                     showToast('Imaginea a fost salvată în galerie!');
                 });
             } catch (err) {
-                if(document.body.contains(exportContainer)) document.body.removeChild(exportContainer);
+                if(document.body.contains(clone)) document.body.removeChild(clone);
                 console.error(err);
                 showToast('Nu s-a putut genera imaginea.', 'error');
             }
