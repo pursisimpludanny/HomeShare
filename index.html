@@ -6,11 +6,12 @@
     <title>HomeShare Premium</title>
 
     <meta name="theme-color" content="#090d16">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="HomeShare">
     
-    <!-- PWA Manifest -->
+    <!-- PWA Manifest Inline -->
     <script>
         const manifestData = {
             "name": "HomeShare App",
@@ -21,23 +22,16 @@
             "theme_color": "#090d16",
             "icons": [
                 {
-                    "src": "https://placehold.co/192x192/111827/f59e0b?text=HS",
-                    "sizes": "192x192",
-                    "type": "image/png"
-                },
-                {
-                    "src": "https://placehold.co/512x512/111827/f59e0b?text=HS",
-                    "sizes": "512x512",
-                    "type": "image/png"
+                    "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23f59e0b' d='M256 32L32 224h64v256h128V320h64v160h128V224h64L256 32z'/%3E%3C/svg%3E",
+                    "sizes": "192x192 512x512",
+                    "type": "image/svg+xml"
                 }
             ]
         };
-        const stringManifest = JSON.stringify(manifestData);
-        const blob = new Blob([stringManifest], {type: 'application/json'});
-        const manifestURL = URL.createObjectURL(blob);
+        const blob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
         const link = document.createElement('link');
         link.rel = 'manifest';
-        link.href = manifestURL;
+        link.href = URL.createObjectURL(blob);
         document.head.appendChild(link);
     </script>
 
@@ -99,11 +93,11 @@
 
     <div id="toast-container"></div>
 
-    <!-- Header with House Logo -->
+    <!-- Header cu Logo Casă -->
     <header class="pt-6 pb-2 px-5 sticky top-0 z-40 bg-darkBg/90 backdrop-blur-md">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <h1 class="text-xl font-black tracking-tight text-white flex items-center gap-2.5">
-                <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
+                <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-sm">
                     <i class="fa-solid fa-house text-base"></i>
                 </div>
                 HomeShare
@@ -162,7 +156,7 @@
                 <div>
                     <label class="block text-[11px] uppercase tracking-wider font-semibold text-slate-400 mb-1.5">Tip Utilitate / Furnizor</label>
                     <select id="bill-type" required class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-amber-500 outline-none transition-all appearance-none">
-                        <!-- Populat dinamic cu furnizorii salvați -->
+                        <!-- Populat dinamic -->
                     </select>
                 </div>
                 <div>
@@ -268,22 +262,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Service Worker for PWA Installation -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                const swCode = `
-                    self.addEventListener('install', (e) => self.skipWaiting());
-                    self.addEventListener('activate', (e) => e.waitUntil(clients.claim()));
-                    self.addEventListener('fetch', (e) => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
-                `;
-                const blob = new Blob([swCode], { type: 'text/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-                navigator.serviceWorker.register(swUrl).catch(err => console.log('SW error:', err));
-            });
-        }
-    </script>
 
     <!-- Firebase & App Logic -->
     <script type="module">
@@ -522,7 +500,6 @@
                     const amount = shares[res.id];
                     if (amount > 0.01) {
                         const isPaid = bill.payments[res.id] || false;
-                        // Neplătit cu roșu, Plătit cu verde
                         const btnClass = isPaid 
                             ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
                             : 'bg-red-500/10 text-red-400 border-red-500/30';
@@ -548,9 +525,9 @@
 
                 const card = document.createElement('div');
                 card.id = `bill-card-${bill.id}`;
-                card.className = "bg-[#111827]/90 border border-slate-800/80 rounded-3xl overflow-hidden shadow-xl hover:border-slate-700 transition-all relative";
+                card.className = "bg-[#111827] border border-slate-800 rounded-3xl overflow-hidden shadow-2xl transition-all relative";
                 card.innerHTML = `
-                    <div class="p-4 border-b border-slate-800/60 flex justify-between items-center bg-slate-900/30">
+                    <div class="p-4 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/60">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-xl ${style.theme} border flex items-center justify-center shrink-0">
                                 <i class="fa-solid ${style.icon} text-lg"></i>
@@ -561,12 +538,14 @@
                                 <p class="text-[10px] text-amber-400 font-medium mt-0.5"><i class="fa-solid fa-clock"></i> Scadentă: ${dDue}</p>
                             </div>
                         </div>
-                        <div class="text-right shrink-0">
-                            <span class="block text-xl font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
-                            <div class="flex gap-2 justify-end mt-1">
-                                <button onclick="window.shareCard('${bill.id}')" class="text-amber-400 hover:text-amber-300 transition-colors px-1.5 py-0.5 bg-amber-500/10 rounded border border-amber-500/20 text-xs" title="Distribuie pe WhatsApp"><i class="fa-brands fa-whatsapp"></i></button>
-                                <button onclick="window.editBill('${bill.id}')" class="text-slate-500 hover:text-white transition-colors"><i class="fa-solid fa-pen-to-square text-xs"></i></button>
-                                <button onclick="window.confirmDeleteAction('bill', '${bill.id}')" class="text-slate-500 hover:text-red-400 transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <div class="text-right shrink-0 flex items-center gap-2">
+                            <div>
+                                <span class="block text-xl font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
+                                <div class="flex gap-2 justify-end mt-1">
+                                    <button onclick="window.shareCard('${bill.id}')" class="text-amber-400 hover:text-amber-300 transition-colors px-1.5 py-0.5 bg-amber-500/10 rounded border border-amber-500/20 text-xs" title="Distribuie pe WhatsApp"><i class="fa-brands fa-whatsapp"></i></button>
+                                    <button onclick="window.editBill('${bill.id}')" class="text-slate-500 hover:text-white transition-colors"><i class="fa-solid fa-pen-to-square text-xs"></i></button>
+                                    <button onclick="window.confirmDeleteAction('bill', '${bill.id}')" class="text-slate-500 hover:text-red-400 transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -577,17 +556,37 @@
         }
 
         window.shareCard = async function(billId) {
-            const cardEl = document.getElementById(`bill-card-${billId}`);
-            if(!cardEl) return;
-            
-            showToast('Se generează imaginea pentru WhatsApp...', 'success');
+            const originalCard = document.getElementById(`bill-card-${billId}`);
+            if(!originalCard) return;
+
+            showToast('Se generează imaginea curată pentru WhatsApp...', 'success');
+
+            // Cream un element curat în afara ecranului pentru randare impecabilă (fără butoane de ștergere/editare)
+            const exportContainer = document.createElement('div');
+            exportContainer.style.position = 'fixed';
+            exportContainer.style.top = '-9999px';
+            exportContainer.style.width = '400px';
+            exportContainer.style.backgroundColor = '#090d16';
+            exportContainer.style.padding = '20px';
+            exportContainer.style.borderRadius = '24px';
+            exportContainer.style.border = '1px solid #1f2937';
+            exportContainer.innerHTML = originalCard.innerHTML;
+
+            // Eliminam butoanele de actiune din imaginea generata
+            const actionButtons = exportContainer.querySelectorAll('button');
+            actionButtons.forEach(b => b.remove());
+
+            document.body.appendChild(exportContainer);
+
             try {
-                const canvas = await html2canvas(cardEl, {
+                const canvas = await html2canvas(exportContainer, {
                     backgroundColor: '#090d16',
-                    scale: 2,
+                    scale: 3,
                     logging: false
                 });
                 
+                document.body.removeChild(exportContainer);
+
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], `factura_${billId}.png`, { type: 'image/png' });
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -595,22 +594,22 @@
                             await navigator.share({
                                 files: [file],
                                 title: 'Factură HomeShare',
-                                text: 'Vezi detaliile și repartizarea facturii pe HomeShare.'
+                                text: 'Salut! Iată detaliile și repartizarea facturii.'
                             });
                             return;
                         } catch (err) {
-                            console.log('Share canceled or failed', err);
+                            console.log('Share canceled', err);
                         }
                     }
                     
-                    // Fallback: download image
                     const link = document.createElement('a');
                     link.download = `factura_${billId}.png`;
                     link.href = canvas.toDataURL();
                     link.click();
-                    showToast('Imaginea a fost descărcată! O poți trimite pe WhatsApp.');
+                    showToast('Imaginea a fost salvată! O poți trimite pe WhatsApp.');
                 });
             } catch (err) {
+                if(document.body.contains(exportContainer)) document.body.removeChild(exportContainer);
                 console.error(err);
                 showToast('Nu s-a putut genera imaginea.', 'error');
             }
