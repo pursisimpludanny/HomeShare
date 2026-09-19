@@ -413,8 +413,8 @@
                     <div class="animate-slideUp space-y-4">
                         <div class="flex items-center justify-between mt-2 mb-4">
                             <h2 class="text-lg font-extrabold tracking-tight">Panou Facturi</h2>
-                            <button onclick="openBillModal()" class="w-10 h-10 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20 active:scale-95 transition-transform">
-                                <i class="fa-solid fa-plus text-lg"></i>
+                            <button onclick="openBillModal()" class="w-10 h-10 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20 active:scale-95 transition-transform shadow-sm">
+                                <i class="fa-solid fa-plus text-base"></i>
                             </button>
                         </div>
                         <div id="bills-list" class="space-y-4 pb-4"></div>
@@ -500,13 +500,13 @@
                         const isPaid = bill.payments[res.id] || false;
                         const btnClass = isPaid 
                             ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
-                            : 'bg-red-500/10 text-red-400 border-red-500/30';
-                        const icon = isPaid ? '<i class="fa-solid fa-check text-xs"></i>' : '<i class="fa-solid fa-xmark text-xs"></i>';
+                            : 'bg-red-500/15 text-red-400 border-red-500/30';
+                        const icon = isPaid ? '<i class="fa-solid fa-check text-xs"></i>' : '<i class="fa-solid fa-xmark text-xs font-bold"></i>';
                         
                         paymentsHTML += `
-                            <div class="flex items-center justify-between py-1.5 px-3 bg-slate-900/40 rounded-xl border border-slate-800/50">
-                                <span class="text-xs text-slate-300 font-medium truncate max-w-[140px]">${res.name}</span>
-                                <div class="flex items-center gap-2.5">
+                            <div class="flex items-center justify-between py-2 px-3 bg-slate-900/50 rounded-xl border border-slate-800/60">
+                                <span class="text-xs text-slate-200 font-medium truncate max-w-[150px]">${res.name}</span>
+                                <div class="flex items-center gap-3">
                                     <span class="font-bold text-white text-xs">${amount.toFixed(2)} €</span>
                                     <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="w-7 h-7 rounded-lg border flex items-center justify-center transition-all ${btnClass} active:scale-95 shadow-sm" title="${isPaid ? 'Plătit' : 'Neplătit'}">
                                         ${icon}
@@ -533,17 +533,17 @@
                     let labelStatus = `Scadent: ${new Date(bill.dueDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'})}`;
 
                     if(diffDays < 0) {
-                        badgeClass = 'bg-red-500/15 text-red-400 border-red-500/30';
+                        badgeClass = 'bg-red-500/20 text-red-400 border-red-500/40';
                         iconBadge = 'fa-triangle-exclamation';
-                        labelStatus = `Depășit (${Math.abs(diffDays)}z)`;
+                        labelStatus = `Depășit (${Math.abs(diffDays)} zile)`;
                     } else if(diffDays <= 3) {
-                        badgeClass = 'bg-amber-500/15 text-amber-400 border-amber-500/30';
+                        badgeClass = 'bg-amber-500/20 text-amber-400 border-amber-500/40';
                         iconBadge = 'fa-clock';
                         labelStatus = `Expiră în ${diffDays} zile`;
                     }
 
                     dueDateHTML = `
-                        <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] font-semibold ${badgeClass}">
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg border text-[10px] font-semibold ${badgeClass} mt-1">
                             <i class="fa-solid ${iconBadge}"></i> ${labelStatus}
                         </div>
                     `;
@@ -551,27 +551,28 @@
 
                 const card = document.createElement('div');
                 card.id = `bill-card-${bill.id}`;
-                card.className = "bg-[#111827] border border-slate-800/90 rounded-2xl overflow-hidden shadow-xl transition-all relative p-3.5 space-y-2.5";
+                card.className = "bg-[#111827] border border-slate-800/90 rounded-2xl overflow-hidden shadow-xl p-3.5 space-y-3 relative";
                 card.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-2.5 overflow-hidden">
-                            <div class="w-9 h-9 rounded-xl ${style.theme} border flex items-center justify-center shrink-0">
+                    <div class="flex justify-between items-start gap-2">
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <div class="w-10 h-10 rounded-xl ${style.theme} border flex items-center justify-center shrink-0 shadow-inner">
                                 <i class="fa-solid ${style.icon} text-sm"></i>
                             </div>
                             <div class="overflow-hidden leading-tight">
-                                <h3 class="font-bold text-white text-xs truncate max-w-[130px]">${bill.type}</h3>
+                                <h3 class="font-bold text-white text-xs truncate max-w-[140px]">${bill.type}</h3>
                                 <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5">${dStart} — ${dEnd}</p>
+                                ${dueDateHTML}
                             </div>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 shrink-0">
                             <div class="text-right">
                                 <span class="block text-base font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
                             </div>
-                            <div class="flex items-center gap-1 bg-slate-900/80 border border-slate-800 p-1 rounded-xl">
+                            <div class="flex items-center gap-1 bg-slate-900/90 border border-slate-800/80 p-1 rounded-xl shadow-sm">
                                 <button onclick="window.shareCard('${bill.id}')" class="w-7 h-7 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg flex items-center justify-center text-xs transition-all" title="Distribuie WhatsApp">
                                     <i class="fa-brands fa-whatsapp text-sm"></i>
                                 </button>
-                                <button onclick="window.editBill('${bill.id}')" class="w-7 h-7 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-lg flex items-center justify-center text-xs transition-all" title="Editează">
+                                <button onclick="window.editBill('${bill.id}')" class="w-7 h-7 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg flex items-center justify-center text-xs transition-all" title="Editează">
                                     <i class="fa-solid fa-pen text-[10px]"></i>
                                 </button>
                                 <button onclick="window.confirmDeleteAction('bill', '${bill.id}')" class="w-7 h-7 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg flex items-center justify-center text-xs transition-all" title="Șterge">
@@ -580,8 +581,7 @@
                             </div>
                         </div>
                     </div>
-                    ${dueDateHTML ? `<div>${dueDateHTML}</div>` : ''}
-                    <div class="grid grid-cols-1 gap-1.5 pt-1 border-t border-slate-800/60">${paymentsHTML || '<p class="text-[11px] text-slate-500 text-center">Fără locatari activi.</p>'}</div>
+                    <div class="grid grid-cols-1 gap-1.5 pt-2 border-t border-slate-800/60">${paymentsHTML || '<p class="text-[11px] text-slate-500 text-center">Fără locatari activi.</p>'}</div>
                 `;
                 container.appendChild(card);
             });
@@ -593,31 +593,34 @@
 
             showToast('Se generează imaginea exactă pentru WhatsApp...', 'success');
 
-            // Clone exact card element to guarantee identical UI snapshot
-            const clone = originalCard.cloneNode(true);
-            clone.style.position = 'fixed';
-            clone.style.top = '-9999px';
-            clone.style.left = '0';
-            clone.style.width = '380px';
-            clone.style.zIndex = '99999';
+            // Creează un container invizibil dar cu lățime fixă pentru mobil (380px) ca să iasă perfect
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'fixed';
+            wrapper.style.top = '-9999px';
+            wrapper.style.left = '0';
+            wrapper.style.width = '380px';
+            wrapper.style.zIndex = '99999';
 
-            // Remove action buttons from the exported image clone for cleanliness
-            const actionContainer = clone.querySelector('.flex.items-center.gap-1.bg-slate-900\\/80');
+            const clone = originalCard.cloneNode(true);
+            // Ascunde butoanele de acțiune din imaginea exportată (WhatsApp, edit, delete) ca să arate curat
+            const actionContainer = clone.querySelector('.flex.items-center.gap-1.bg-slate-900\\/90');
             if(actionContainer) actionContainer.remove();
 
-            document.body.appendChild(clone);
+            wrapper.appendChild(clone);
+            document.body.appendChild(wrapper);
 
             try {
                 const canvas = await html2canvas(clone, {
                     backgroundColor: '#111827',
                     scale: 3,
-                    logging: false
+                    logging: false,
+                    useCORS: true
                 });
                 
-                document.body.removeChild(clone);
+                document.body.removeChild(wrapper);
 
                 canvas.toBlob(async (blob) => {
-                    const file = new File([blob], `factura.png`, { type: 'image/png' });
+                    const file = new File([blob], `factura_${billId}.png`, { type: 'image/png' });
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
                             await navigator.share({
@@ -638,7 +641,7 @@
                     showToast('Imaginea a fost salvată în galerie!');
                 });
             } catch (err) {
-                if(document.body.contains(clone)) document.body.removeChild(clone);
+                if(document.body.contains(wrapper)) document.body.removeChild(wrapper);
                 console.error(err);
                 showToast('Nu s-a putut genera imaginea.', 'error');
             }
