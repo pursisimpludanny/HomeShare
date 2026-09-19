@@ -5,6 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HomeShare Premium</title>
 
+    <!-- PWA Manifest & Meta Tags -->
+    <meta name="theme-color" content="#090d16">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HomeShare">
+    
+    <!-- Dynamic PWA Manifest Injection -->
+    <script>
+        const manifestData = {
+            "name": "HomeShare App",
+            "short_name": "HomeShare",
+            "start_url": "./",
+            "display": "standalone",
+            "background_color": "#090d16",
+            "theme_color": "#090d16",
+            "icons": [
+                {
+                    "src": "https://placehold.ico/192x192/111827/f59e0b?text=HS",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                },
+                {
+                    "src": "https://placehold.ico/512x512/111827/f59e0b?text=HS",
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }
+            ]
+        };
+        const stringManifest = JSON.stringify(manifestData);
+        const blob = new Blob([stringManifest], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(blob);
+        const link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = manifestURL;
+        document.head.appendChild(link);
+    </script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -232,12 +269,28 @@
         </div>
     </div>
 
+    <!-- Service Worker Registration for PWA support -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+                    self.addEventListener('install', (e) => self.skipWaiting());
+                    self.addEventListener('activate', (e) => e.waitUntil(clients.claim()));
+                    self.addEventListener('fetch', (e) => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+                `;
+                const blob = new Blob([swCode], { type: 'text/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                navigator.serviceWorker.register(swUrl).catch(err => console.log('SW error:', err));
+            });
+        }
+    </script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, deleteDoc, updateDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Configurația ta Firebase
+        // Configurația ta Firebase privată (mara-logitrans-extra)
         const firebaseConfig = {
             apiKey: "AIzaSyBcV2yVy__WThvvJF7Y76e82Fpdv1mt1bM",
             authDomain: "mara-logitrans-extra.firebaseapp.com",
@@ -711,13 +764,11 @@
 
         async function initApp() {
             try {
-                // Verificăm dacă rulăm în platforma de testare sau standalone pe GitHub
                 const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
                 if (token) {
                     try {
                         await signInWithCustomToken(auth, token);
                     } catch (customErr) {
-                        console.warn("Custom token failed, falling back to anonymous auth:", customErr);
                         await signInAnonymously(auth);
                     }
                 } else {
