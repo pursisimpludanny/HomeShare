@@ -15,6 +15,7 @@
     <link rel="icon" type="image/png" href="https://img.icons8.com/?size=100&id=wFfu6zXx15Yk&format=png&color=000000">
     <link rel="apple-touch-icon" href="https://img.icons8.com/?size=100&id=wFfu6zXx15Yk&format=png&color=000000">
 
+    <!-- PWA Manifest Inline with Stable PNG Icon -->
     <script>
         const manifestData = {
             "name": "HomeShare App",
@@ -41,17 +42,14 @@
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                const swCode = `
-                    self.addEventListener('install', (e) => { self.skipWaiting(); });
-                    self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
-                    self.addEventListener('fetch', (e) => { e.respondWith(fetch(e.request).catch(() => caches.match(e.request))); });
-                `;
+                const swCode = `self.addEventListener('fetch', function(event) { event.respondWith(fetch(event.request)); });`;
                 const swBlob = new Blob([swCode], { type: 'text/javascript' });
                 navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(err => console.log('SW failed', err));
             });
         }
     </script>
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -70,8 +68,11 @@
         }
     </script>
 
+    <!-- FontAwesome & Google Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- html2canvas for card sharing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
@@ -133,8 +134,9 @@
         </div>
     </header>
 
+    <!-- Main Container -->
     <main id="app-container" class="w-full max-w-md mx-auto px-4 flex-1 mt-4">
-        <!-- Dynamic content -->
+        <!-- Conținut dinamic -->
     </main>
 
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-[#0b101d]/95 backdrop-blur-xl border-t border-slate-800/80 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
@@ -169,6 +171,7 @@
         </div>
     </nav>
 
+    <!-- MODAL: FACTURĂ -->
     <div id="modal-bill" class="fixed inset-0 modal-overlay hidden z-[60] flex items-center justify-center p-4 opacity-0 transition-opacity">
         <div class="bg-[#121824] rounded-3xl border border-slate-800 w-full max-w-sm overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-bill-content">
             <div class="px-5 py-4 border-b border-slate-800/60 flex items-center justify-between">
@@ -179,7 +182,9 @@
                 <input type="hidden" id="bill-id">
                 <div>
                     <label class="block text-[11px] uppercase tracking-wider font-semibold text-slate-400 mb-1.5">Tip Utilitate / Furnizor</label>
-                    <select id="bill-type" required class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-amber-500 outline-none transition-all appearance-none"></select>
+                    <select id="bill-type" required class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-amber-500 outline-none transition-all appearance-none">
+                        <!-- Populat dinamic -->
+                    </select>
                 </div>
                 <div>
                     <label class="block text-[11px] uppercase tracking-wider font-semibold text-slate-400 mb-1.5">Suma Totală (€)</label>
@@ -204,6 +209,7 @@
         </div>
     </div>
 
+    <!-- MODAL: LOCATAR -->
     <div id="modal-resident" class="fixed inset-0 modal-overlay hidden z-[60] flex items-center justify-center p-4 opacity-0 transition-opacity">
         <div class="bg-[#121824] rounded-3xl border border-slate-800 w-full max-w-sm overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-resident-content">
             <div class="px-5 py-4 border-b border-slate-800/60 flex items-center justify-between">
@@ -239,6 +245,7 @@
         </div>
     </div>
 
+    <!-- MODAL: FURNIZOR -->
     <div id="modal-provider" class="fixed inset-0 modal-overlay hidden z-[60] flex items-center justify-center p-4 opacity-0 transition-opacity">
         <div class="bg-[#121824] rounded-3xl border border-slate-800 w-full max-w-sm overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-provider-content">
             <div class="px-5 py-4 border-b border-slate-800/60 flex items-center justify-between">
@@ -266,6 +273,7 @@
         </div>
     </div>
 
+    <!-- MODAL: CONFIRMARE ȘTERGERE -->
     <div id="modal-confirm" class="fixed inset-0 modal-overlay hidden z-[70] flex items-center justify-center p-4 opacity-0 transition-opacity">
         <div class="bg-[#121824] rounded-3xl border border-red-900/30 w-full max-w-[280px] overflow-hidden transform scale-95 transition-transform shadow-2xl" id="modal-confirm-content">
             <div class="p-6 text-center">
@@ -532,21 +540,18 @@
 
             if (diffDays < 0) {
                 return {
-                    class: 'bg-rose-500/20 text-rose-400 border-rose-500/40',
-                    text: `Depășit (${Math.abs(diffDays)} zile)`,
-                    icon: 'fa-triangle-exclamation'
+                    class: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+                    text: `Depășit (${Math.abs(diffDays)} zile)`
                 };
             } else if (diffDays <= 3) {
                 return {
-                    class: 'bg-amber-500/20 text-amber-400 border-amber-500/40',
-                    text: `Expiră în ${diffDays} ${diffDays === 1 ? 'zi' : 'zile'}`,
-                    icon: 'fa-clock'
+                    class: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+                    text: `Expiră în ${diffDays} ${diffDays === 1 ? 'zi' : 'zile'}`
                 };
             } else {
                 return {
-                    class: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
-                    text: `Scadent: ${new Date(dueDateStr).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'})}`,
-                    icon: 'fa-circle-check'
+                    class: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+                    text: `Scadent: ${new Date(dueDateStr).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'})}`
                 };
             }
         }
@@ -575,17 +580,17 @@
                     if (amount > 0.01) {
                         const isPaid = bill.payments[res.id] || false;
                         const btnClass = isPaid 
-                            ? 'bg-emerald-950/85 text-emerald-400 border-emerald-500/60 hover:bg-emerald-900' 
-                            : 'bg-rose-950/85 text-rose-400 border-rose-500/60 hover:bg-rose-900';
+                            ? 'bg-emerald-950/70 text-emerald-400 border-emerald-500/40 hover:bg-emerald-900' 
+                            : 'bg-rose-950/70 text-rose-400 border-rose-500/40 hover:bg-rose-900';
                         const icon = isPaid ? '<i class="fa-solid fa-check text-xs font-black"></i>' : '<i class="fa-solid fa-xmark text-xs font-black"></i>';
                         const labelText = isPaid ? 'Plătit' : 'Neplătit';
                         
                         paymentsHTML += `
-                            <div class="flex items-center justify-between py-2 px-3.5 bg-[#0b101d] rounded-2xl border border-slate-800/80 mb-2">
-                                <span class="text-xs text-slate-200 font-bold">${res.name}</span>
+                            <div class="flex items-center justify-between py-2 px-3.5 bg-[#0b101d] rounded-2xl border border-slate-800/60 mb-2">
+                                <span class="text-xs text-slate-200 font-semibold">${res.name}</span>
                                 <div class="flex items-center gap-3">
-                                    <span class="font-bold text-white text-xs">${amount.toFixed(2)} €</span>
-                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="px-3 py-1.5 rounded-xl border flex items-center gap-2 transition-all ${btnClass} active:scale-95 shadow-sm text-[11px] font-bold min-w-[92px] justify-center">
+                                    <span class="font-extrabold text-white text-xs">${amount.toFixed(2)} €</span>
+                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="px-3 py-1.5 rounded-xl border flex items-center gap-1.5 transition-all ${btnClass} active:scale-95 shadow-sm text-[11px] font-bold min-w-[90px] justify-center">
                                         ${icon} <span>${labelText}</span>
                                     </button>
                                 </div>
@@ -600,42 +605,42 @@
                 const badgeInfo = getDueDateBadgeInfo(bill.dueDate);
                 let dueDateBadgeHTML = badgeInfo ? `
                     <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[10px] font-bold ${badgeInfo.class}">
-                        <i class="fa-solid ${badgeInfo.icon}"></i> ${badgeInfo.text}
+                        <i class="fa-solid fa-clock"></i> ${badgeInfo.text}
                     </div>
                 ` : '';
 
                 const card = document.createElement('div');
                 card.id = `bill-card-${bill.id}`;
-                card.className = "bg-[#121824] border border-slate-800/90 rounded-3xl overflow-hidden shadow-xl p-4 space-y-3.5 relative transition-all";
+                card.className = "bg-[#121824] border border-slate-800/90 rounded-3xl overflow-hidden shadow-2xl p-4 space-y-3 relative transition-all";
                 
                 card.innerHTML = `
-                    <div class="flex items-center justify-between border-b border-slate-800/70 pb-3">
+                    <div class="flex items-center justify-between border-b border-slate-800/60 pb-3">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-2xl ${style.theme} border flex items-center justify-center shrink-0 shadow-md text-base">
                                 <i class="fa-solid ${style.icon}"></i>
                             </div>
                             <div>
                                 <h3 class="font-bold text-white text-xs tracking-tight">${bill.type}</h3>
-                                <p class="text-[10px] text-slate-400 font-semibold">${dStart} — ${dEnd}</p>
+                                <p class="text-[10px] text-slate-400 font-medium">${dStart} — ${dEnd}</p>
                             </div>
                         </div>
                         <div class="text-right">
-                            <span class="text-xl font-extrabold text-white tracking-tight block">${bill.amount.toFixed(2)} €</span>
+                            <span class="text-lg font-black text-white tracking-tight block">${bill.amount.toFixed(2)} €</span>
                             <div class="mt-1 flex justify-end">${dueDateBadgeHTML}</div>
                         </div>
                     </div>
 
                     <div class="space-y-1">${paymentsHTML || '<p class="text-[11px] text-slate-500 text-center py-1">Fără locatari activi.</p>'}</div>
 
-                    <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800/50">
-                        <button onclick="window.shareCard('${bill.id}')" title="Distribuie pe WhatsApp" class="w-8 h-8 bg-slate-800/50 hover:bg-slate-800 text-emerald-400 border border-slate-700/60 rounded-xl flex items-center justify-center text-xs transition-all shadow-sm">
+                    <div class="flex items-center justify-end gap-1.5 pt-1.5 border-t border-slate-800/40">
+                        <button onclick="window.shareCard('${bill.id}')" title="Distribuie" class="w-8 h-8 bg-slate-800/40 hover:bg-slate-800 text-slate-400 hover:text-emerald-400 border border-slate-700/40 rounded-xl flex items-center justify-center text-xs transition-all shadow-sm">
                             <i class="fa-brands fa-whatsapp text-sm"></i>
                         </button>
-                        <button onclick="window.editBill('${bill.id}')" title="Editează" class="w-8 h-8 bg-slate-800/50 hover:bg-slate-800 text-slate-300 border border-slate-700/60 rounded-xl flex items-center justify-center text-xs transition-all shadow-sm">
-                            <i class="fa-solid fa-pen text-[10px]"></i>
+                        <button onclick="window.editBill('${bill.id}')" title="Editează" class="w-8 h-8 bg-slate-800/40 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/40 rounded-xl flex items-center justify-center text-xs transition-all shadow-sm">
+                            <i class="fa-solid fa-pen text-[11px]"></i>
                         </button>
-                        <button onclick="window.confirmDeleteAction('bill', '${bill.id}')" title="Șterge" class="w-8 h-8 bg-slate-800/50 hover:bg-slate-800 text-rose-400 border border-slate-700/60 rounded-xl flex items-center justify-center text-xs transition-all shadow-sm">
-                            <i class="fa-solid fa-trash text-[10px]"></i>
+                        <button onclick="window.confirmDeleteAction('bill', '${bill.id}')" title="Șterge" class="w-8 h-8 bg-slate-800/40 hover:bg-slate-800 text-slate-400 hover:text-rose-400 border border-slate-700/40 rounded-xl flex items-center justify-center text-xs transition-all shadow-sm">
+                            <i class="fa-solid fa-trash text-[11px]"></i>
                         </button>
                     </div>
                 `;
@@ -662,8 +667,8 @@
                 const amount = shares[res.id];
                 if (amount > 0.01) {
                     const isPaid = bill.payments[res.id] || false;
-                    const badgeBg = isPaid ? 'rgba(6, 78, 59, 0.85)' : 'rgba(136, 19, 55, 0.85)';
-                    const badgeBorder = isPaid ? 'rgba(16, 185, 129, 0.6)' : 'rgba(244, 63, 94, 0.6)';
+                    const badgeBg = isPaid ? 'rgba(6, 78, 59, 0.7)' : 'rgba(136, 19, 55, 0.7)';
+                    const badgeBorder = isPaid ? 'rgba(16, 185, 129, 0.4)' : 'rgba(244, 63, 94, 0.4)';
                     const badgeColor = isPaid ? '#34d399' : '#fb7185';
                     const symbol = isPaid ? '✓' : '✕';
                     const labelText = isPaid ? 'Plătit' : 'Neplătit';
@@ -673,11 +678,11 @@
                     }
 
                     paymentsExportHTML += `
-                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background-color: #0b101d; border: 1px solid rgba(30, 41, 59, 0.8); border-radius: 16px; margin-bottom: 8px;">
-                            <span style="font-size: 12px; color: #f3f4f6; font-weight: 700;">${res.name}</span>
-                            <div style="display: flex; align-items: center; gap: 14px;">
-                                <span style="font-size: 12px; color: #ffffff; font-weight: 700;">${amount.toFixed(2)} €</span>
-                                <div style="padding: 4px 10px; border-radius: 10px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; min-width: 92px; justify-content: center;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background-color: #0b101d; border: 1px solid rgba(30, 41, 59, 0.6); border-radius: 16px; margin-bottom: 8px;">
+                            <span style="font-size: 12px; color: #f3f4f6; font-weight: 600;">${res.name}</span>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 12px; color: #ffffff; font-weight: 800;">${amount.toFixed(2)} €</span>
+                                <div style="padding: 4px 10px; border-radius: 10px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; min-width: 85px; justify-content: center;">
                                     <span>${symbol}</span> <span>${labelText}</span>
                                 </div>
                             </div>
@@ -687,7 +692,7 @@
             });
 
             let dueBadgeExportHTML = badgeInfo ? `
-                <div style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; background-color: ${badgeInfo.class.includes('emerald') ? 'rgba(6, 78, 59, 0.8)' : badgeInfo.class.includes('amber') ? 'rgba(120, 53, 15, 0.8)' : 'rgba(136, 19, 55, 0.8)'}; border: 1px solid ${badgeInfo.class.includes('emerald') ? 'rgba(16, 185, 129, 0.5)' : badgeInfo.class.includes('amber') ? 'rgba(245, 158, 11, 0.5)' : 'rgba(244, 63, 94, 0.5)'}; color: ${badgeInfo.class.includes('emerald') ? '#34d399' : badgeInfo.class.includes('amber') ? '#fbbf24' : '#fb7185'}; font-size: 10px; font-weight: 700;">
+                <div style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; background-color: ${badgeInfo.class.includes('emerald') ? 'rgba(6, 78, 59, 0.7)' : badgeInfo.class.includes('amber') ? 'rgba(120, 53, 15, 0.7)' : 'rgba(136, 19, 55, 0.7)'}; border: 1px solid ${badgeInfo.class.includes('emerald') ? 'rgba(16, 185, 129, 0.4)' : badgeInfo.class.includes('amber') ? 'rgba(245, 158, 11, 0.4)' : 'rgba(244, 63, 94, 0.4)'}; color: ${badgeInfo.class.includes('emerald') ? '#34d399' : badgeInfo.class.includes('amber') ? '#fbbf24' : '#fb7185'}; font-size: 10px; font-weight: 700;">
                     ${badgeInfo.text}
                 </div>
             ` : '';
@@ -706,18 +711,18 @@
             exportContainer.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.7)';
             
             exportContainer.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(30, 41, 59, 0.8); padding-bottom: 12px; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(30, 41, 59, 0.7); padding-bottom: 12px; margin-bottom: 10px;">
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <div style="width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3);">
                             <span style="font-size: 16px;">⚡</span>
                         </div>
                         <div>
                             <div style="font-weight: 700; color: #ffffff; font-size: 12px;">${bill.type}</div>
-                            <div style="font-size: 10px; color: #94a3b8; font-weight: 600; margin-top: 2px;">${dStart} — ${dEnd}</div>
+                            <div style="font-size: 10px; color: #94a3b8; font-weight: 500; margin-top: 2px;">${dStart} — ${dEnd}</div>
                         </div>
                     </div>
                     <div style="text-align: right;">
-                        <span style="font-size: 18px; font-weight: 800; color: #ffffff; display: block;">${bill.amount.toFixed(2)} €</span>
+                        <span style="font-size: 18px; font-weight: 900; color: #ffffff; display: block;">${bill.amount.toFixed(2)} €</span>
                         <div style="margin-top: 4px; display: flex; justify-content: flex-end;">${dueBadgeExportHTML}</div>
                     </div>
                 </div>
@@ -740,11 +745,12 @@
 
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], `factura_${billId}.png`, { type: 'image/png' });
-                    let textMessage = `Factura "${bill.type}" ${bill.amount.toFixed(2)}€\n`;
+                    
+                    let textMessage = `"${bill.type}" *${bill.amount.toFixed(2)}€*\n_${dStart} — ${dEnd}_`;
                     if(unpaidListText.length > 0) {
-                        textMessage += unpaidListText.join('\n');
+                        textMessage += `\n` + unpaidListText.join('\n');
                     } else {
-                        textMessage += `Toate plățile sunt achitate! 🎉`;
+                        textMessage += `\nToate plățile sunt achitate! 🎉`;
                     }
 
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
