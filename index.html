@@ -97,9 +97,9 @@
 
         /* Compact, readable bill rows on narrow phone screens. */
         .bill-payment-row { display: grid; grid-template-columns: minmax(0, 1fr) 84px 88px; align-items: center; gap: 6px; min-height: 44px; padding: 5px 2px; border-bottom: 1px solid rgba(30, 41, 59, .65); }
-        .bill-payment-name { min-width: 0; white-space: nowrap; font-size: clamp(10px, 3.4vw, 13px); letter-spacing: -.025em; }
-        .bill-payment-amount { white-space: nowrap; text-align: center; font-size: 12px; font-variant-numeric: tabular-nums; }
-        .bill-payment-toggle { width: 86px; white-space: nowrap; padding: 5px 4px; border: 1px solid; font-size: 10px; justify-content: center; }
+        .bill-payment-name { min-width: 0; white-space: nowrap; font-size: clamp(11px, 3.7vw, 14px); letter-spacing: -.025em; }
+        .bill-payment-amount { white-space: nowrap; text-align: center; font-size: 13px; font-variant-numeric: tabular-nums; }
+        .bill-payment-toggle { width: 86px; white-space: nowrap; padding: 5px 4px; border: 1px solid; font-size: 11px; justify-content: center; }
 
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none; }
         .toast { background: #121824; border: 1px solid #1e293b; padding: 12px 16px; border-radius: 14px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); font-size: 0.875rem; display: flex; align-items: center; gap: 12px; animation: toastIn 0.3s forwards; }
@@ -609,7 +609,7 @@
                 
                 const badgeInfo = getDueDateBadgeInfo(bill.dueDate);
                 let dueDateBadgeHTML = badgeInfo ? `
-                    <div class="inline-flex items-center gap-1 text-[10px] font-semibold whitespace-nowrap ${badgeInfo.class.split(' ').slice(1,2).join(' ')}">
+                    <div class="inline-flex items-center gap-1 text-[11px] font-semibold whitespace-nowrap ${badgeInfo.class.split(' ').slice(1,2).join(' ')}">
                         <i class="fa-solid ${badgeInfo.icon}"></i> ${badgeInfo.text}
                     </div>
                 ` : '';
@@ -625,12 +625,12 @@
                                 <i class="fa-solid ${style.icon}"></i>
                             </div>
                             <div class="min-w-0">
-                                <h3 class="font-bold text-white text-[13px] tracking-tight whitespace-nowrap">${bill.type}</h3>
-                                <p class="text-[10px] text-slate-400 font-semibold mt-0.5 whitespace-nowrap">${dStart} — ${dEnd}</p>
+                                <h3 class="font-bold text-white text-sm tracking-tight whitespace-nowrap">${bill.type}</h3>
+                                <p class="text-[11px] text-slate-400 font-semibold mt-0.5 whitespace-nowrap">${dStart} — ${dEnd}</p>
                             </div>
                         </div>
                         <div class="text-right flex flex-col items-end">
-                            <span class="text-[17px] font-extrabold text-white tracking-tight whitespace-nowrap">${bill.amount.toFixed(2)} €</span>
+                            <span class="text-lg font-extrabold text-white tracking-tight whitespace-nowrap">${bill.amount.toFixed(2)} €</span>
                             <div class="mt-0.5">${dueDateBadgeHTML}</div>
                         </div>
                     </div>
