@@ -95,6 +95,12 @@
         .theme-teal { color: #2dd4bf; background: rgba(20, 184, 166, 0.12); border-color: rgba(45, 212, 191, 0.25); }
         .theme-slate { color: #94a3b8; background: rgba(100, 116, 139, 0.12); border-color: rgba(148, 163, 184, 0.25); }
 
+        /* Compact, readable bill rows on narrow phone screens. */
+        .bill-payment-row { display: grid; grid-template-columns: minmax(0, 1fr) 84px 88px; align-items: center; gap: 6px; min-height: 44px; padding: 5px 2px; border-bottom: 1px solid rgba(30, 41, 59, .65); }
+        .bill-payment-name { min-width: 0; white-space: nowrap; font-size: clamp(10px, 3.4vw, 13px); letter-spacing: -.025em; }
+        .bill-payment-amount { white-space: nowrap; text-align: center; font-size: 12px; font-variant-numeric: tabular-nums; }
+        .bill-payment-toggle { width: 86px; white-space: nowrap; padding: 5px 4px; border: 1px solid; font-size: 10px; justify-content: center; }
+
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none; }
         .toast { background: #121824; border: 1px solid #1e293b; padding: 12px 16px; border-radius: 14px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); font-size: 0.875rem; display: flex; align-items: center; gap: 12px; animation: toastIn 0.3s forwards; }
         .toast.fade-out { animation: toastOut 0.3s forwards; }
@@ -133,7 +139,7 @@
         </div>
     </header>
 
-    <main id="app-container" class="w-full max-w-md mx-auto px-4 flex-1 mt-4">
+    <main id="app-container" class="w-full max-w-2xl mx-auto px-3 sm:px-5 flex-1 mt-3">
         <!-- Dynamic content -->
     </main>
 
@@ -565,31 +571,34 @@
                 return;
             }
 
+            const paidBills = [];
             window.state.bills.sort((a, b) => new Date(b.endDate) - new Date(a.endDate)).forEach(bill => {
                 const style = getProviderStyle(bill.type);
                 const shares = window.calculateShares(bill);
                 let paymentsHTML = '';
+                let hasEligibleResidents = false;
+                let allPaid = true;
                 
                 window.state.residents.forEach(res => {
                     const amount = shares[res.id];
                     if (amount > 0.01) {
+                        hasEligibleResidents = true;
                         const isPaid = bill.payments[res.id] || false;
-                        const btnClass = isPaid 
-                            ? 'bg-emerald-950/80 text-emerald-400 border-emerald-500/60 hover:bg-emerald-900' 
-                            : 'bg-rose-950/80 text-rose-400 border-rose-500/60 hover:bg-rose-900';
+                        if (!isPaid) allPaid = false;
+                        const btnClass = isPaid
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/35 hover:bg-emerald-500/20'
+                            : 'bg-rose-500/10 text-rose-400 border-rose-500/35 hover:bg-rose-500/20';
                         const icon = isPaid ? '<i class="fa-solid fa-check text-xs font-black"></i>' : '<i class="fa-solid fa-xmark text-xs font-black"></i>';
                         const labelText = isPaid ? 'Plătit' : 'Neplătit';
                         const amountColor = isPaid ? 'text-white' : 'text-rose-400 font-extrabold';
                         
                         paymentsHTML += `
-                            <div class="flex items-center justify-between py-2.5 px-4 bg-[#0b101d] rounded-2xl border border-slate-800/80 mb-2.5">
-                                <span class="text-sm text-slate-100 font-bold">${res.name}</span>
-                                <div class="flex items-center gap-4">
-                                    <span class="${amountColor} text-sm">${amount.toFixed(2)} €</span>
-                                    <button onclick="window.togglePayment('${bill.id}', '${res.id}')" class="px-3.5 py-2 rounded-xl border flex items-center gap-2 transition-all ${btnClass} active:scale-95 shadow-sm text-xs font-bold min-w-[102px] justify-center">
-                                        ${icon} <span>${labelText}</span>
-                                    </button>
-                                </div>
+                            <div class="bill-payment-row">
+                                <span class="bill-payment-name text-slate-100 font-bold" title="${res.name}">${res.name}</span>
+                                <span class="bill-payment-amount ${amountColor}">${amount.toFixed(2)} €</span>
+                                <button onclick="window.togglePayment('${bill.id}', '${res.id}')" aria-label="${labelText}: ${res.name}" class="bill-payment-toggle rounded-lg flex items-center gap-1 transition-all ${btnClass} active:scale-95 font-bold">
+                                    ${icon}<span>${labelText}</span>
+                                </button>
                             </div>
                         `;
                     }
@@ -600,35 +609,35 @@
                 
                 const badgeInfo = getDueDateBadgeInfo(bill.dueDate);
                 let dueDateBadgeHTML = badgeInfo ? `
-                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-bold ${badgeInfo.class}">
+                    <div class="inline-flex items-center gap-1 text-[10px] font-semibold whitespace-nowrap ${badgeInfo.class.split(' ').slice(1,2).join(' ')}">
                         <i class="fa-solid ${badgeInfo.icon}"></i> ${badgeInfo.text}
                     </div>
                 ` : '';
 
                 const card = document.createElement('div');
                 card.id = `bill-card-${bill.id}`;
-                card.className = "bg-[#121824] border border-slate-800/90 rounded-3xl overflow-hidden shadow-xl p-4 space-y-3.5 relative transition-all";
+                card.className = "bg-[#121824] border border-slate-800/90 rounded-2xl overflow-hidden shadow-lg px-3.5 py-3 space-y-2.5 relative transition-all sm:p-4";
                 
                 card.innerHTML = `
-                    <div class="flex items-center justify-between border-b border-slate-800/70 pb-3.5">
-                        <div class="flex items-center gap-3">
-                            <div class="w-11 h-11 rounded-2xl ${style.theme} border flex items-center justify-center shrink-0 shadow-md text-lg">
+                    <div class="flex items-center justify-between gap-2 border-b border-slate-800/70 pb-2.5">
+                        <div class="flex items-center gap-2 min-w-0 flex-1">
+                            <div class="w-8 h-8 rounded-xl ${style.theme} border flex items-center justify-center shrink-0 text-sm">
                                 <i class="fa-solid ${style.icon}"></i>
                             </div>
-                            <div>
-                                <h3 class="font-bold text-white text-sm tracking-tight">${bill.type}</h3>
-                                <p class="text-xs text-slate-400 font-semibold mt-0.5">${dStart} — ${dEnd}</p>
+                            <div class="min-w-0">
+                                <h3 class="font-bold text-white text-[13px] tracking-tight whitespace-nowrap">${bill.type}</h3>
+                                <p class="text-[10px] text-slate-400 font-semibold mt-0.5 whitespace-nowrap">${dStart} — ${dEnd}</p>
                             </div>
                         </div>
                         <div class="text-right flex flex-col items-end">
-                            <span class="text-xl font-black text-white tracking-tight">${bill.amount.toFixed(2)} €</span>
-                            <div class="mt-1">${dueDateBadgeHTML}</div>
+                            <span class="text-[17px] font-extrabold text-white tracking-tight whitespace-nowrap">${bill.amount.toFixed(2)} €</span>
+                            <div class="mt-0.5">${dueDateBadgeHTML}</div>
                         </div>
                     </div>
 
-                    <div class="space-y-1">${paymentsHTML || '<p class="text-xs text-slate-500 text-center py-1">Fără locatari activi.</p>'}</div>
+                    <div>${paymentsHTML || '<p class="text-xs text-slate-500 text-center py-1">Fără locatari activi.</p>'}</div>
 
-                    <div class="flex items-center justify-end gap-2 pt-2.5 border-t border-slate-800/50">
+                    <div data-share-actions class="flex items-center justify-end gap-1.5 pt-1.5">
                         <button onclick="window.shareCard('${bill.id}')" title="Distribuie" class="w-9 h-9 bg-slate-800/40 hover:bg-slate-800 text-emerald-400 border border-slate-700/50 rounded-xl flex items-center justify-center text-sm transition-all shadow-sm">
                             <i class="fa-brands fa-whatsapp"></i>
                         </button>
@@ -640,139 +649,82 @@
                         </button>
                     </div>
                 `;
-                container.appendChild(card);
+                if (hasEligibleResidents && allPaid) paidBills.push(card);
+                else container.appendChild(card);
             });
+
+            if (paidBills.length) {
+                const section = document.createElement('details');
+                section.className = 'mt-2 rounded-2xl border border-slate-800/80 bg-[#0d131f] overflow-hidden';
+                section.innerHTML = `
+                    <summary class="list-none cursor-pointer flex items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-slate-300">
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> Facturi achitate</span>
+                        <span class="flex items-center gap-2 text-xs text-slate-500"><span>${paidBills.length}</span><i class="fa-solid fa-chevron-down text-[10px] transition-transform"></i></span>
+                    </summary>
+                    <div class="space-y-3 px-2 pb-3"></div>`;
+                const list = section.querySelector('div');
+                paidBills.forEach(card => list.appendChild(card));
+                section.addEventListener('toggle', () => section.querySelector('summary i.fa-chevron-down').style.transform = section.open ? 'rotate(180deg)' : '');
+                container.appendChild(section);
+            }
         };
 
         window.shareCard = async function(billId) {
-            const bill = state.bills.find(b => b.id === billId);
-            if(!bill) return;
+            const bill = state.bills.find(item => item.id === billId);
+            const sourceCard = document.getElementById(`bill-card-${billId}`);
+            if (!bill || !sourceCard) return;
 
-            showToast('Se generează imaginea pentru WhatsApp...', 'success');
-
-            const style = getProviderStyle(bill.type);
-            const shares = calculateShares(bill);
+            showToast('Se pregătește captura facturii...', 'success');
             const dStart = new Date(bill.startDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
             const dEnd = new Date(bill.endDate).toLocaleDateString('ro-RO', {day:'2-digit', month:'short'});
-            const badgeInfo = getDueDateBadgeInfo(bill.dueDate);
+            const shares = calculateShares(bill);
+            const unpaidListText = state.residents
+                .filter(res => shares[res.id] > 0.01 && !bill.payments[res.id])
+                .map(res => `- ${res.name}: ${shares[res.id].toFixed(2)} €`);
+            const textMessage = `${bill.type} *${bill.amount.toFixed(2)}€*\n_${dStart} — ${dEnd}_\n${unpaidListText.length ? unpaidListText.join('\n') : 'Toate plățile sunt achitate! 🎉'}`;
 
-            let paymentsExportHTML = '';
-            let unpaidListText = [];
-
-            state.residents.forEach(res => {
-                const amount = shares[res.id];
-                if (amount > 0.01) {
-                    const isPaid = bill.payments[res.id] || false;
-                    const badgeBg = isPaid ? 'rgba(6, 78, 59, 0.85)' : 'rgba(136, 19, 55, 0.85)';
-                    const badgeBorder = isPaid ? 'rgba(16, 185, 129, 0.6)' : 'rgba(244, 63, 94, 0.6)';
-                    const badgeColor = isPaid ? '#34d399' : '#fb7185';
-                    const symbol = isPaid ? '✓' : '✕';
-                    const labelText = isPaid ? 'Plătit' : 'Neplătit';
-
-                    if(!isPaid) {
-                        unpaidListText.push(`- ${res.name}: ${amount.toFixed(2)} €`);
-                    }
-
-                    paymentsExportHTML += `
-                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background-color: #0b101d; border: 1px solid rgba(30, 41, 59, 0.8); border-radius: 16px; margin-bottom: 10px; width: 100%; box-sizing: border-box;">
-                            <span style="font-size: 14px; color: #ffffff; font-weight: 700;">${res.name}</span>
-                            <div style="display: flex; align-items: center; gap: 16px;">
-                                <span style="font-size: 14px; color: ${isPaid ? '#ffffff' : '#fb7185'}; font-weight: 700;">${amount.toFixed(2)} €</span>
-                                <div style="padding: 6px 12px; border-radius: 12px; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; font-weight: 700; min-width: 102px;">
-                                    <span>${symbol}</span> <span>${labelText}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-            });
-
-            let dueBadgeExportHTML = badgeInfo ? `
-                <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 8px; background-color: ${badgeInfo.class.includes('emerald') ? 'rgba(6, 78, 59, 0.8)' : badgeInfo.class.includes('amber') ? 'rgba(120, 53, 15, 0.8)' : 'rgba(136, 19, 55, 0.8)'}; border: 1px solid ${badgeInfo.class.includes('emerald') ? 'rgba(16, 185, 129, 0.5)' : badgeInfo.class.includes('amber') ? 'rgba(245, 158, 11, 0.5)' : 'rgba(244, 63, 94, 0.5)'}; color: ${badgeInfo.class.includes('emerald') ? '#34d399' : badgeInfo.class.includes('amber') ? '#fbbf24' : '#fb7185'}; font-size: 11px; font-weight: 700;">
-                    ${badgeInfo.text}
-                </div>
-            ` : '';
-
-            const exportContainer = document.createElement('div');
-            exportContainer.style.position = 'fixed';
-            exportContainer.style.top = '-9999px';
-            exportContainer.style.left = '0';
-            exportContainer.style.width = '420px';
-            exportContainer.style.padding = '24px';
-            exportContainer.style.backgroundColor = '#121824';
-            exportContainer.style.fontFamily = "'Inter', sans-serif";
-            exportContainer.style.borderRadius = '28px';
-            exportContainer.style.border = '1px solid #1e293b';
-            exportContainer.style.color = '#f3f4f6';
-            exportContainer.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.8)';
-            exportContainer.style.boxSizing = 'border-box';
-            
-            exportContainer.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(30, 41, 59, 0.8); padding-bottom: 16px; margin-bottom: 14px; width: 100%;">
-                    <div style="display: flex; align-items: center; gap: 14px;">
-                        <div style="width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3); font-size: 20px;">
-                            ⚡
-                        </div>
-                        <div>
-                            <div style="font-weight: 800; color: #ffffff; font-size: 15px;">${bill.type}</div>
-                            <div style="font-size: 12px; color: #94a3b8; font-weight: 600; margin-top: 3px;">${dStart} — ${dEnd}</div>
-                        </div>
-                    </div>
-                    <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
-                        <span style="font-size: 22px; font-weight: 900; color: #ffffff; display: block; line-height: 1.1;">${bill.amount.toFixed(2)} €</span>
-                        <div style="margin-top: 6px; display: flex; justify-content: flex-end;">${dueBadgeExportHTML}</div>
-                    </div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 6px; width: 100%;">
-                    ${paymentsExportHTML}
-                </div>
-            `;
-
-            document.body.appendChild(exportContainer);
+            const capture = sourceCard.cloneNode(true);
+            const actionRow = capture.querySelector('[data-share-actions]');
+            if (actionRow) actionRow.remove();
+            capture.removeAttribute('id');
+            capture.style.position = 'fixed';
+            capture.style.left = '-10000px';
+            capture.style.top = '0';
+            capture.style.margin = '0';
+            capture.style.width = `${sourceCard.offsetWidth || Math.max(280, document.getElementById('app-container').clientWidth - 24)}px`;
+            capture.style.maxWidth = 'none';
+            capture.style.boxSizing = 'border-box';
+            document.body.appendChild(capture);
 
             try {
-                const canvas = await html2canvas(exportContainer, {
+                if (document.fonts?.ready) await document.fonts.ready;
+                const canvas = await html2canvas(capture, {
                     backgroundColor: '#121824',
                     scale: 3,
                     logging: false,
                     useCORS: true
                 });
-                
-                document.body.removeChild(exportContainer);
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                if (!blob) throw new Error('Nu s-a putut crea imaginea facturii.');
+                const file = new File([blob], `factura_${billId}.png`, { type: 'image/png' });
 
-                canvas.toBlob(async (blob) => {
-                    const file = new File([blob], `factura_${billId}.png`, { type: 'image/png' });
-                    
-                    let textMessage = `${bill.type} *${bill.amount.toFixed(2)}€*\n_${dStart} — ${dEnd}_`;
-                    if(unpaidListText.length > 0) {
-                        textMessage += `\n` + unpaidListText.join('\n');
-                    } else {
-                        textMessage += `\nToate plățile sunt achitate! 🎉`;
-                    }
-
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        try {
-                            await navigator.share({
-                                files: [file],
-                                title: 'Factură HomeShare',
-                                text: textMessage
-                            });
-                            return;
-                        } catch (err) {
-                            console.log('Share canceled', err);
-                        }
-                    }
-                    
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: 'Factură HomeShare', text: textMessage });
+                } else {
                     const link = document.createElement('a');
                     link.download = `factura_${bill.type}.png`;
-                    link.href = canvas.toDataURL();
+                    link.href = URL.createObjectURL(blob);
                     link.click();
-                    showToast('Imaginea și mesajul au fost pregătite!');
-                });
+                    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+                    showToast('Captura facturii a fost descărcată.');
+                }
             } catch (err) {
-                if(document.body.contains(exportContainer)) document.body.removeChild(exportContainer);
-                console.error(err);
-                showToast('Eroare la generarea imaginii.', 'error');
+                if (err.name !== 'AbortError') {
+                    console.error(err);
+                    showToast('Eroare la capturarea facturii.', 'error');
+                }
+            } finally {
+                capture.remove();
             }
         };
 
